@@ -472,7 +472,7 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
         <input type="text" id="manual-descricao" placeholder="Nome do produto">
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
       <div>
         <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px">VEL (m/min)</label>
         <input type="number" id="manual-vel" placeholder="ex: 8.5" step="0.1" min="0">
@@ -480,6 +480,10 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
       <div>
         <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px">MEDIDA (mm)</label>
         <input type="number" id="manual-medida" placeholder="ex: 350" step="1" min="0">
+      </div>
+      <div>
+        <label style="font-size:12px;color:var(--txt2);display:block;margin-bottom:4px">ENTRE PEÇAS (mm)</label>
+        <input type="number" id="manual-entre" placeholder="ex: 20" step="1" min="0">
       </div>
     </div>
     <button style="background:var(--accent);color:#111;width:100%;margin-top:12px;padding:10px;font-size:15px" onclick="confirmarManual()">✓ CONFIRMAR PRODUTO</button>
@@ -495,6 +499,10 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
       <div class="spec-item">
         <span class="spec-label">Medida</span>
         <span class="spec-val mono" id="card-medida">—</span>
+      </div>
+      <div class="spec-item">
+        <span class="spec-label">Entre Pç</span>
+        <span class="spec-val mono" id="card-entre">—</span>
       </div>
       <div class="spec-item">
         <span class="spec-label">VEL</span>
@@ -578,6 +586,10 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
             <label>MEDIDA (mm)</label>
             <input type="number" id="s1-med" placeholder="350" step="1" min="0">
           </div>
+          <div class="field">
+            <label>Entre Pç (mm)</label>
+            <input type="number" id="s1-entre" placeholder="20" step="1" min="0">
+          </div>
           <button class="sim-btn" onclick="calcSim1()">CALC</button>
         </div>
         <div id="s1-result" class="sim-result hidden"></div>
@@ -648,6 +660,10 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
       <div class="form-group">
         <label>Novo produto — MEDIDA (mm)</label>
         <input type="number" id="troca-medida" step="1" min="0" placeholder="350">
+      </div>
+      <div class="form-group">
+        <label>Novo produto — Entre Peças (mm)</label>
+        <input type="number" id="troca-entre" step="1" min="0" placeholder="20">
       </div>
       <div class="form-group">
         <label>Código / Descrição (opcional)</label>
@@ -826,17 +842,17 @@ function getPeriodoAtual() {
   return null;
 }
 
-function calcCxMin(vel, medida) {
+function calcCxMin(vel, medida, ep) {
   if (!medida || !vel) return 0;
-  return (vel * 1000) / medida;
+  return (vel * 1000) / (medida + (ep || 0));
 }
 
-function calcMeta(vel, medida, min) {
-  return Math.round(calcCxMin(vel, medida) * min);
+function calcMeta(vel, medida, min, ep) {
+  return Math.round(calcCxMin(vel, medida, ep) * min);
 }
 
-function calcMetaTurno(vel, medida) {
-  return calcMeta(vel, medida, TOTAL_MIN);
+function calcMetaTurno(vel, medida, ep) {
+  return calcMeta(vel, medida, TOTAL_MIN, ep);
 }
 
 function getCorPct(pct, pending) {
@@ -1048,12 +1064,13 @@ async function buscarCodigo() {
 }
 
 function confirmarManual() {
-  const vel    = parseFloat(document.getElementById('manual-vel').value);
-  const medida = parseFloat(document.getElementById('manual-medida').value);
-  const codigo = document.getElementById('manual-codigo').value.trim() || 'MANUAL';
-  const descricao = document.getElementById('manual-descricao').value.trim() || 'Produto manual';
+  const vel        = parseFloat(document.getElementById('manual-vel').value);
+  const medida     = parseFloat(document.getElementById('manual-medida').value);
+  const entre_pecas = parseFloat(document.getElementById('manual-entre').value) || 0;
+  const codigo     = document.getElementById('manual-codigo').value.trim() || 'MANUAL';
+  const descricao  = document.getElementById('manual-descricao').value.trim() || 'Produto manual';
   if (!vel || !medida) { showToast('Informe VEL e MEDIDA', 'err'); return; }
-  setProduto({ codigo, descricao, vel, medida, pb:'', ean128:'' });
+  setProduto({ codigo, descricao, vel, medida, entre_pecas, pb:'', ean128:'' });
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -1061,7 +1078,7 @@ function confirmarManual() {
 // ═══════════════════════════════════════════════════════════════
 function setProduto(p) {
   state.produto = p;
-  state.swapHistory = [{ hora: agoraTempo(), vel: p.vel, medida: p.medida, codigo: p.codigo }];
+  state.swapHistory = [{ hora: agoraTempo(), vel: p.vel, medida: p.medida, entre_pecas: p.entre_pecas || 0, codigo: p.codigo }];
   renderProdutoCard();
   renderTabela();
   showToast('✓ ' + (p.descricao || p.codigo), 'ok');
@@ -1070,14 +1087,16 @@ function setProduto(p) {
 function renderProdutoCard() {
   const p = state.produto;
   if (!p) { document.getElementById('produto-card').classList.add('hidden'); return; }
-  const cxm = calcCxMin(p.vel, p.medida);
+  const ep  = p.entre_pecas || 0;
+  const cxm = calcCxMin(p.vel, p.medida, ep);
   document.getElementById('card-nome').textContent    = p.descricao || '—';
   document.getElementById('card-codigo').textContent  = p.codigo || '—';
   document.getElementById('card-medida').textContent  = fmtNum(p.medida,0) + ' mm';
+  document.getElementById('card-entre').textContent   = fmtNum(ep,0) + ' mm';
   document.getElementById('card-vel').textContent     = fmtNum(p.vel,1) + ' m/min';
   document.getElementById('card-cxmin').textContent   = fmtNum(cxm,2) + ' cx/min';
-  document.getElementById('card-meta-turno').textContent = fmtNum(calcMetaTurno(p.vel, p.medida),0);
-  document.getElementById('card-meta-hora').textContent  = fmtNum(calcMeta(p.vel, p.medida, 60),0);
+  document.getElementById('card-meta-turno').textContent = fmtNum(calcMetaTurno(p.vel, p.medida, ep),0);
+  document.getElementById('card-meta-hora').textContent  = fmtNum(calcMeta(p.vel, p.medida, 60, ep),0);
   document.getElementById('produto-card').classList.remove('hidden');
 }
 
@@ -1132,7 +1151,8 @@ function renderTabela() {
 
 function calcMetaParaPeriodo(periodo) {
   if (!state.produto && state.swapHistory.length === 0) return 0;
-  if (state.swapHistory.length === 0) return calcMeta(state.produto.vel, state.produto.medida, periodo.min);
+  const p = state.produto;
+  if (state.swapHistory.length === 0) return calcMeta(p.vel, p.medida, periodo.min, p.entre_pecas || 0);
 
   // Calcular meta com possíveis trocas durante o período
   const iniMin = parseHHMM(periodo.inicio);
@@ -1154,7 +1174,7 @@ function calcMetaParaPeriodo(periodo) {
 
     if (segFim > segInicio && swapMin <= segInicio) {
       const minSeg = segFim - segInicio;
-      totalMeta += calcMeta(swaps[i].vel, swaps[i].medida, minSeg);
+      totalMeta += calcMeta(swaps[i].vel, swaps[i].medida, minSeg, swaps[i].entre_pecas || 0);
       cursor = segFim;
     }
   }
@@ -1163,10 +1183,11 @@ function calcMetaParaPeriodo(periodo) {
   if (cursor < fimMin) {
     const last = swaps[swaps.length - 1];
     const minRest = fimMin - cursor;
-    totalMeta += calcMeta(last.vel, last.medida, minRest);
+    totalMeta += calcMeta(last.vel, last.medida, minRest, last.entre_pecas || 0);
   }
 
-  return totalMeta || (state.produto ? calcMeta(state.produto.vel, state.produto.medida, periodo.min) : 0);
+  const pp = state.produto;
+  return totalMeta || (pp ? calcMeta(pp.vel, pp.medida, periodo.min, pp.entre_pecas || 0) : 0);
 }
 
 function onRealizadoChange(periodoId, valor) {
@@ -1215,7 +1236,7 @@ function atualizarTotais() {
   // Projeção: acum + (cx/min × min_restantes)
   let projecao = realAcum;
   if (state.produto) {
-    const cxm = calcCxMin(state.produto.vel, state.produto.medida);
+    const cxm = calcCxMin(state.produto.vel, state.produto.medida, state.produto.entre_pecas || 0);
     let minDecorridos = 0;
     PERIODOS.forEach(p => {
       const iniMin2 = parseHHMM(p.inicio);
@@ -1252,7 +1273,8 @@ async function salvarRegistroAPI(periodoId) {
     acumMeta += r.meta || calcMetaParaPeriodo(p);
   });
   const efic = acumMeta > 0 ? (acumReal / acumMeta * 100) : 0;
-  const cxm  = calcCxMin(state.produto.vel, state.produto.medida);
+  const ep   = state.produto.entre_pecas || 0;
+  const cxm  = calcCxMin(state.produto.vel, state.produto.medida, ep);
   const agoraMin = parseHHMM(agoraTempo());
   let minDecorr = 0;
   PERIODOS.forEach(p => {
@@ -1264,21 +1286,22 @@ async function salvarRegistroAPI(periodoId) {
   const projecao = acumReal + Math.round(cxm * Math.max(0, TOTAL_MIN - minDecorr));
 
   const body = {
-    data:       state.data,
-    linha:      state.linha,
-    produto:    state.produto.codigo,
-    vel:        state.produto.vel,
-    medida:     state.produto.medida,
-    periodo:    periodoId,
-    min_p:      periodo.min,
-    meta:       reg.meta || 0,
-    realizado:  reg.realizado || 0,
-    saldo:      reg.saldo || 0,
-    pct:        reg.pct || 0,
-    acum_real:  acumReal,
-    acum_meta:  acumMeta,
-    eficiencia: efic,
-    projecao:   projecao
+    data:        state.data,
+    linha:       state.linha,
+    produto:     state.produto.codigo,
+    vel:         state.produto.vel,
+    medida:      state.produto.medida,
+    entre_pecas: ep,
+    periodo:     periodoId,
+    min_p:       periodo.min,
+    meta:        reg.meta || 0,
+    realizado:   reg.realizado || 0,
+    saldo:       reg.saldo || 0,
+    pct:         reg.pct || 0,
+    acum_real:   acumReal,
+    acum_meta:   acumMeta,
+    eficiencia:  efic,
+    projecao:    projecao
   };
 
   // Salvar cache local
@@ -1299,10 +1322,11 @@ async function salvarRegistroAPI(periodoId) {
 // MODAL TROCA
 // ═══════════════════════════════════════════════════════════════
 function abrirModalTroca() {
-  document.getElementById('troca-hora').value = agoraTempo();
-  document.getElementById('troca-vel').value = state.produto ? state.produto.vel : '';
-  document.getElementById('troca-medida').value = state.produto ? state.produto.medida : '';
-  document.getElementById('troca-codigo').value = '';
+  document.getElementById('troca-hora').value    = agoraTempo();
+  document.getElementById('troca-vel').value     = state.produto ? state.produto.vel : '';
+  document.getElementById('troca-medida').value  = state.produto ? state.produto.medida : '';
+  document.getElementById('troca-entre').value   = state.produto ? (state.produto.entre_pecas || 0) : '';
+  document.getElementById('troca-codigo').value  = '';
   document.getElementById('modal-troca').classList.remove('hidden');
 }
 
@@ -1311,10 +1335,11 @@ function fecharModalTroca() {
 }
 
 async function confirmarTroca() {
-  const hora   = document.getElementById('troca-hora').value;
-  const vel    = parseFloat(document.getElementById('troca-vel').value);
-  const medida = parseFloat(document.getElementById('troca-medida').value);
-  const codigo = document.getElementById('troca-codigo').value.trim();
+  const hora        = document.getElementById('troca-hora').value;
+  const vel         = parseFloat(document.getElementById('troca-vel').value);
+  const medida      = parseFloat(document.getElementById('troca-medida').value);
+  const entre_pecas = parseFloat(document.getElementById('troca-entre').value) || 0;
+  const codigo      = document.getElementById('troca-codigo').value.trim();
 
   if (!vel || !medida) { showToast('Informe VEL e MEDIDA do novo produto', 'err'); return; }
 
@@ -1327,9 +1352,9 @@ async function confirmarTroca() {
     }
   }
 
-  state.swapHistory.push({ hora, vel, medida, codigo: codigo || 'MANUAL' });
+  state.swapHistory.push({ hora, vel, medida, entre_pecas, codigo: codigo || 'MANUAL' });
   if (!descricao) {
-    state.produto = { ...(state.produto||{}), vel, medida, codigo: codigo || 'MANUAL', descricao: descricao || state.produto?.descricao || 'Produto' };
+    state.produto = { ...(state.produto||{}), vel, medida, entre_pecas, codigo: codigo || 'MANUAL', descricao: descricao || state.produto?.descricao || 'Produto' };
   }
 
   fecharModalTroca();
@@ -1406,15 +1431,16 @@ function toggleSimulacoes() {
 function calcSim1() {
   const vel    = parseFloat(document.getElementById('s1-vel').value);
   const medida = parseFloat(document.getElementById('s1-med').value);
+  const ep     = parseFloat(document.getElementById('s1-entre').value) || 0;
   if (!vel || !medida) { showToast('Informe VEL e MEDIDA', 'err'); return; }
 
-  const cxm = calcCxMin(vel, medida);
+  const cxm = calcCxMin(vel, medida, ep);
   let linhas = `<div>Cx/min: <span class="highlight">${fmtNum(cxm,2)}</span></div>`;
   linhas    += `<div>Cx/hora: <span class="highlight">${fmtNum(cxm*60,0)}</span></div>`;
   linhas    += `<div>Meta turno (${TOTAL_MIN}min): <span class="highlight">${fmtNum(cxm*TOTAL_MIN,0)}</span></div>`;
   linhas    += '<br><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--txt2)"><td>Período</td><td>Min</td><td>Meta</td></tr>';
   PERIODOS.forEach(p => {
-    const m = calcMeta(vel, medida, p.min);
+    const m = calcMeta(vel, medida, p.min, ep);
     linhas += `<tr><td>${p.id} ${p.label}</td><td>${p.min}</td><td style="color:var(--accent)">${m}</td></tr>`;
   });
   linhas += '</table>';
@@ -1427,10 +1453,11 @@ function calcSim1() {
 function calcSim2() {
   const qtd    = parseFloat(document.getElementById('s2-qtd').value);
   const medida = parseFloat(document.getElementById('s2-med').value);
+  const ep     = state.produto ? (state.produto.entre_pecas || 0) : 0;
   if (!qtd || !medida) { showToast('Informe Qtd e MEDIDA', 'err'); return; }
 
-  const velNecessaria = (qtd / TOTAL_MIN) * (medida / 1000);
-  const cxmNec = (velNecessaria * 1000) / medida;
+  const velNecessaria = (qtd / TOTAL_MIN) * ((medida + ep) / 1000);
+  const cxmNec = (velNecessaria * 1000) / (medida + ep);
   const tempoNec = qtd / cxmNec;
   const cabe = tempoNec <= TOTAL_MIN;
   const saldo = TOTAL_MIN - tempoNec;
@@ -1469,7 +1496,7 @@ async function carregarSim3() {
 
   const comCalc = prods
     .filter(p => p.vel > 0 && p.medida > 0)
-    .map(p => ({ ...p, cxmin: calcCxMin(p.vel, p.medida), meta: calcMetaTurno(p.vel, p.medida) }))
+    .map(p => ({ ...p, cxmin: calcCxMin(p.vel, p.medida, p.entre_pecas || 0), meta: calcMetaTurno(p.vel, p.medida, p.entre_pecas || 0) }))
     .sort((a,b) => b.cxmin - a.cxmin);
 
   const maxMeta = comCalc[0]?.meta || 1;
@@ -1499,7 +1526,7 @@ function calcSim4() {
   if (!minParada || minParada <= 0) { showToast('Informe duração > 0', 'err'); return; }
   if (!state.produto) { showToast('Selecione um produto primeiro', 'err'); return; }
 
-  const cxm = calcCxMin(state.produto.vel, state.produto.medida);
+  const cxm = calcCxMin(state.produto.vel, state.produto.medida, state.produto.entre_pecas || 0);
   const cxmAcel = cxm * state.fatorAceleracao;
   const caixasPerdidas = Math.round(cxm * minParada);
 
@@ -1521,7 +1548,7 @@ function calcSim4() {
   const html = `
     <div>Cx/min atual: <span class="highlight">${fmtNum(cxm,2)}</span></div>
     <div>Caixas perdidas: <span class="bad-val">${fmtNum(caixasPerdidas,0)} cx</span></div>
-    <div>Meta ajustada: <span class="highlight">${fmtNum(calcMetaTurno(state.produto.vel,state.produto.medida) - caixasPerdidas,0)} cx</span></div>
+    <div>Meta ajustada: <span class="highlight">${fmtNum(calcMetaTurno(state.produto.vel,state.produto.medida,state.produto.entre_pecas||0) - caixasPerdidas,0)} cx</span></div>
     <div>Cx/min com aceleração (${fmtNum(state.fatorAceleracao*100-100,0)}%): <span class="warn-val">${fmtNum(cxmAcel,2)}</span></div>
     <div>Tempo para recuperar: <span class="highlight">${fmtNum(minParaRecuperar,0)} min</span></div>
     <div>Recuperável? <span class="${corRec}">${recuperavel ? '✓ SIM (' + fmtNum(minRestantes,0) + ' min restantes)' : '✗ NÃO — déficit de ' + fmtNum(minParaRecuperar - minRestantes,0) + ' min'}</span></div>
@@ -1554,8 +1581,9 @@ async function carregarRegistros() {
   if (!state.produto && lista.length > 0) {
     const last = [...lista].reverse().find(r => r.vel && r.medida);
     if (last) {
-      state.produto = { codigo: last.produto, descricao: last.produto, vel: last.vel, medida: last.medida, pb:'', ean128:'' };
-      state.swapHistory = [{ hora: '07:00', vel: last.vel, medida: last.medida, codigo: last.produto }];
+      const ep = last.entre_pecas || 0;
+      state.produto = { codigo: last.produto, descricao: last.produto, vel: last.vel, medida: last.medida, entre_pecas: ep, pb:'', ean128:'' };
+      state.swapHistory = [{ hora: '07:00', vel: last.vel, medida: last.medida, entre_pecas: ep, codigo: last.produto }];
       renderProdutoCard();
     }
   }

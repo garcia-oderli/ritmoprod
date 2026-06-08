@@ -495,13 +495,13 @@ function getProximoPeriodo() {
   return null;
 }
 
-function calcCxMin(vel, medida) {
+function calcCxMin(vel, medida, ep) {
   if (!vel || !medida) return 0;
-  return (vel * 1000) / medida;
+  return (vel * 1000) / (medida + (ep || 0));
 }
 
-function calcMeta(vel, medida, min) {
-  return Math.round(calcCxMin(vel, medida) * min);
+function calcMeta(vel, medida, min, ep) {
+  return Math.round(calcCxMin(vel, medida, ep) * min);
 }
 
 function getCorPct(pct) {
@@ -582,14 +582,15 @@ function renderColuna(linha) {
 
   // Inferir produto do último registro
   const lastReg = [...registros].reverse().find(r => r.vel && r.medida);
-  let vel = lastReg ? lastReg.vel : 0;
-  let medida = lastReg ? lastReg.medida : 0;
-  let produto = lastReg ? lastReg.produto : '—';
+  let vel       = lastReg ? lastReg.vel : 0;
+  let medida    = lastReg ? lastReg.medida : 0;
+  let ep        = lastReg ? (lastReg.entre_pecas || 0) : 0;
+  let produto   = lastReg ? lastReg.produto : '—';
 
   document.getElementById(linha + '-produto').textContent = produto;
   document.getElementById(linha + '-vel').textContent    = vel ? fmtNum(vel,1) + ' m/min' : '—';
   document.getElementById(linha + '-med').textContent    = medida ? fmtNum(medida,0) + ' mm' : '—';
-  document.getElementById(linha + '-cxmin').textContent  = vel && medida ? fmtNum(calcCxMin(vel,medida),2) : '—';
+  document.getElementById(linha + '-cxmin').textContent  = vel && medida ? fmtNum(calcCxMin(vel,medida,ep),2) : '—';
 
   let acumReal = 0, acumMeta = 0, lastEfic = 0, lastProj = 0;
   const regMap = {};
@@ -597,7 +598,7 @@ function renderColuna(linha) {
 
   PERIODOS.forEach(p => {
     const reg = regMap[p.id];
-    const meta     = reg ? reg.meta     : (vel && medida ? calcMeta(vel, medida, p.min) : 0);
+    const meta     = reg ? reg.meta     : (vel && medida ? calcMeta(vel, medida, p.min, ep) : 0);
     const realizado = reg ? reg.realizado : 0;
     const saldo    = reg ? reg.saldo    : 0;
     const pct      = reg ? reg.pct      : 0;

@@ -86,6 +86,7 @@ function doPost(e) {
 }
 
 // ── PRODUTO_CODIGO ────────────────────────────────────────────────────────────
+// Colunas: A=CODIGO B=DESCRICAO C=PB D=EAN128 E=MEDIDA(mm) F=VEL(m/min) G=ENTRE_PECAS(mm)
 
 function getProdutos() {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
@@ -99,12 +100,13 @@ function getProdutos() {
     var r = rows[i];
     if (!r[0]) continue;
     result.push({
-      codigo:    String(r[0] || "").trim(),
-      descricao: String(r[1] || "").trim(),
-      pb:        String(r[2] || "").trim(),
-      ean128:    String(r[3] || "").trim(),
-      medida:    parseFloat(r[4]) || 0,
-      vel:       parseFloat(r[5]) || 0
+      codigo:      String(r[0] || "").trim(),
+      descricao:   String(r[1] || "").trim(),
+      pb:          String(r[2] || "").trim(),
+      ean128:      String(r[3] || "").trim(),
+      medida:      parseFloat(r[4]) || 0,
+      vel:         parseFloat(r[5]) || 0,
+      entre_pecas: parseFloat(r[6]) || 0
     });
   }
 
@@ -132,7 +134,7 @@ function buscarPorCodigo(codigo) {
 
 // ── HORA_A_HORA ───────────────────────────────────────────────────────────────
 // Colunas: A=Data B=Linha C=Produto D=VEL E=MEDIDA F=MIN_P G=Meta H=Realizado
-//          I=Saldo J=Pct K=Acum_real L=Acum_meta M=Eficiencia N=Projecao O=Periodo
+//          I=Saldo J=Pct K=Acum_real L=Acum_meta M=Eficiencia N=Projecao O=Periodo P=EntrePecas
 
 function getRegistros(data, linha) {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
@@ -172,9 +174,10 @@ function getRegistros(data, linha) {
       pct:        parseFloat(r[9])  || 0,
       acum_real:  parseFloat(r[10]) || 0,
       acum_meta:  parseFloat(r[11]) || 0,
-      eficiencia: parseFloat(r[12]) || 0,
-      projecao:   parseFloat(r[13]) || 0,
-      periodo:    String(r[14] || "").trim()
+      eficiencia:  parseFloat(r[12]) || 0,
+      projecao:    parseFloat(r[13]) || 0,
+      periodo:     String(r[14] || "").trim(),
+      entre_pecas: parseFloat(r[15]) || 0
     });
   }
 
@@ -225,9 +228,10 @@ function salvarRegistro(body) {
     parseFloat(body.pct)       || 0,
     parseFloat(body.acum_real) || 0,
     parseFloat(body.acum_meta) || 0,
-    parseFloat(body.eficiencia)|| 0,
-    parseFloat(body.projecao)  || 0,
-    periodoStr
+    parseFloat(body.eficiencia)  || 0,
+    parseFloat(body.projecao)    || 0,
+    periodoStr,
+    parseFloat(body.entre_pecas) || 0
   ];
 
   if (targetRow > 0) {
