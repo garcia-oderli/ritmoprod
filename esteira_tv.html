@@ -5,24 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel Esteira — TV</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #111111;
-  --surface: #1C1C1C;
-  --border:  #2A2A2A;
-  --accent:  #F5A623;
-  --ok:      #4CAF50;
-  --warn:    #FF9800;
-  --red:     #F44336;
-  --txt:     #F5F5F5;
-  --txt2:    #888888;
+  --bg:      #0A0A0B;
+  --surface: #18181B;
+  --border:  #3F3F46;
+  --accent:  #FF5C1F;
+  --ok:      #16A34A;
+  --warn:    #EAB308;
+  --red:     #DC2626;
+  --txt:     #FAFAFA;
+  --txt2:    #71717A;
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body {
   background: var(--bg);
   color: var(--txt);
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   height: 100vh;
   overflow: hidden;
   display: flex;
@@ -30,8 +30,8 @@ html, body {
   user-select: none;
   cursor: none;
 }
-h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
-.mono { font-family: 'IBM Plex Mono', monospace; }
+h1,h2,h3,.kpi { font-weight: 700; letter-spacing: -0.03em; }
+.mono { font-family: 'JetBrains Mono', monospace; }
 
 /* TOP BAR */
 #top-bar {
@@ -44,14 +44,14 @@ h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
   flex-shrink: 0;
 }
 .app-title {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(18px, 2.5vw, 32px);
   font-weight: 700;
   color: var(--accent);
   letter-spacing: 2px;
 }
 #top-date {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(12px, 1.5vw, 18px);
   color: var(--txt2);
 }
@@ -95,7 +95,7 @@ h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
   flex-shrink: 0;
 }
 .linha-label {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(22px, 3vw, 40px);
   font-weight: 700;
   color: var(--accent);
@@ -106,7 +106,7 @@ h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
   margin-right: 4px;
 }
 .produto-nome-tv {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(14px, 1.8vw, 24px);
   font-weight: 600;
   color: var(--txt);
@@ -115,7 +115,7 @@ h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
   text-overflow: ellipsis;
 }
 .produto-specs-tv {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(11px, 1.2vw, 15px);
   color: var(--txt2);
   display: flex;
@@ -130,7 +130,7 @@ h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
   align-self: center;
 }
 .eficiencia-pct {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(28px, 4vw, 54px);
   font-weight: 700;
   line-height: 1;
@@ -142,7 +142,7 @@ h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
   text-transform: uppercase;
 }
 .meta-turno-header {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(11px, 1.2vw, 14px);
   color: var(--txt2);
 }
@@ -163,7 +163,7 @@ table.tabela-tv {
 table.tabela-tv thead th {
   background: var(--bg);
   color: var(--txt2);
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(10px, 1.1vw, 14px);
   letter-spacing: 0.8px;
   text-transform: uppercase;
@@ -175,20 +175,20 @@ table.tabela-tv td {
   padding: clamp(5px, 0.9vh, 12px) 6px;
   text-align: center;
   border-bottom: 1px solid var(--border);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(14px, 2vw, 26px);
   vertical-align: middle;
 }
 td.periodo-tv {
   text-align: left;
   padding-left: 8px;
-  font-family: 'Barlow', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(12px, 1.4vw, 18px);
 }
 .periodo-tv .pid { font-weight: 700; color: var(--txt); }
 .periodo-tv .prange { font-size: 0.75em; color: var(--txt2); display: block; }
 .status-badge {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(12px, 1.5vw, 20px);
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -197,7 +197,7 @@ td.periodo-tv {
 /* PERIODO ATUAL — pulsing */
 @keyframes pulse-row {
   0%,100% { background-color: transparent; }
-  50%      { background-color: rgba(245,166,35,0.07); }
+  50%      { background-color: rgba(255,92,31,0.08); }
 }
 tr.periodo-ativo {
   animation: pulse-row 2s ease-in-out infinite;
@@ -221,7 +221,7 @@ tr.periodo-ativo td.periodo-tv .pid { color: var(--accent); }
 .footer-stat { display: flex; flex-direction: column; align-items: center; }
 .footer-stat .lbl { font-size: clamp(8px, 0.9vw, 11px); color: var(--txt2); text-transform: uppercase; letter-spacing: 0.5px; }
 .footer-stat .val {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(16px, 2vw, 28px);
   font-weight: 700;
 }
@@ -238,7 +238,7 @@ tr.periodo-ativo td.periodo-tv .pid { color: var(--accent); }
 }
 .progress-pct {
   text-align: right;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(10px, 1vw, 13px);
   color: var(--txt2);
   margin-top: 2px;
@@ -255,19 +255,19 @@ tr.periodo-ativo td.periodo-tv .pid { color: var(--accent); }
   flex-shrink: 0;
 }
 #clock {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(14px, 2vw, 26px);
   color: var(--txt);
   font-weight: 500;
 }
 #next-period {
-  font-family: 'Barlow Condensed', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: clamp(12px, 1.6vw, 20px);
   color: var(--txt2);
   letter-spacing: 0.5px;
 }
 #last-update {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'JetBrains Mono', monospace;
   font-size: clamp(10px, 1vw, 13px);
   color: var(--txt2);
 }
@@ -301,7 +301,7 @@ tr.periodo-ativo td.periodo-tv .pid { color: var(--accent); }
 
 <!-- TOP BAR -->
 <div id="top-bar">
-  <span class="app-title">⬛ PAINEL ESTEIRA</span>
+  <span class="app-title">ritmoprod<span style="color:#FF5C1F">.</span> · ESTEIRA</span>
   <div class="top-right">
     <span id="top-date"></span>
     <span id="refresh-indicator">↻</span>

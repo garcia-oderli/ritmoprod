@@ -5,17 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Painel Esteira — Operador</title>
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:      #0f172a;
-  --surface: #1e293b;
-  --border:  #334155;
-  --accent:  #3b82f6;
-  --ok:      #22c55e;
-  --warn:    #f59e0b;
-  --red:     #dc2626;
-  --txt:     #f1f5f9;
-  --txt2:    #64748b;
+  --bg:      #0A0A0B;
+  --surface: #18181B;
+  --border:  #3F3F46;
+  --accent:  #FF5C1F;
+  --ok:      #16A34A;
+  --warn:    #EAB308;
+  --red:     #DC2626;
+  --txt:     #FAFAFA;
+  --txt2:    #71717A;
   --radius:  8px;
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -23,7 +25,7 @@ html { background: var(--bg); }
 body {
   background: var(--bg);
   color: var(--txt);
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
   font-size: 15px;
   min-height: 100%;
   max-width: 600px;
@@ -32,7 +34,7 @@ body {
   box-shadow: 0 0 60px rgba(0,0,0,0.6);
 }
 h1,h2,h3 { font-weight: 700; letter-spacing: -0.3px; }
-.mono { font-family: 'SF Mono','Fira Code','Cascadia Code',monospace; }
+.mono { font-family: 'JetBrains Mono', monospace; }
 button { cursor: pointer; border: none; font-family: inherit; font-weight: 600; font-size: 14px; letter-spacing: 0.3px; border-radius: var(--radius); padding: 8px 16px; transition: opacity .15s, transform .1s; }
 button:active { transform: scale(0.97); opacity: 0.85; }
 input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; font-family: inherit; font-size: 14px; width: 100%; outline: none; transition: border-color .2s; }
