@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel Esteira — TV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #111111;
+  --surface: #1C1C1C;
+  --border:  #2A2A2A;
+  --accent:  #F5A623;
+  --ok:      #4CAF50;
+  --warn:    #FF9800;
+  --red:     #F44336;
+  --txt:     #F5F5F5;
+  --txt2:    #888888;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: 'Barlow', sans-serif;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  cursor: none;
+}
+h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
+.mono { font-family: 'IBM Plex Mono', monospace; }
+
+/* TOP BAR */
+#top-bar {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.app-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(18px, 2.5vw, 32px);
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 2px;
+}
+#top-date {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(12px, 1.5vw, 18px);
+  color: var(--txt2);
+}
+#refresh-indicator {
+  font-size: clamp(10px, 1.2vw, 14px);
+  color: var(--txt2);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#refresh-indicator.ativo { opacity: 1; animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.top-right { display: flex; align-items: center; gap: 16px; }
+
+/* MAIN COLUMNS */
+#main-columns {
+  display: grid;
+  grid-template-columns: 1fr 3px 1fr;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+.coluna-divider { background: var(--border); }
+.coluna {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 10px 14px;
+  gap: 8px;
+}
+
+/* COLUMN HEADER */
+.col-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  grid-template-rows: auto auto;
+  gap: 4px 12px;
+  flex-shrink: 0;
+}
+.linha-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(22px, 3vw, 40px);
+  font-weight: 700;
+  color: var(--accent);
+  grid-row: 1 / 3;
+  align-self: center;
+  padding-right: 8px;
+  border-right: 2px solid var(--border);
+  margin-right: 4px;
+}
+.produto-nome-tv {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(14px, 1.8vw, 24px);
+  font-weight: 600;
+  color: var(--txt);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.produto-specs-tv {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(11px, 1.2vw, 15px);
+  color: var(--txt2);
+  display: flex;
+  gap: 14px;
+}
+.spec-chip { display: inline-flex; gap: 4px; align-items: center; }
+.spec-chip span:first-child { color: var(--txt2); font-size: 0.85em; }
+.spec-chip span:last-child  { color: var(--accent); }
+.eficiencia-bloco {
+  text-align: center;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+.eficiencia-pct {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(28px, 4vw, 54px);
+  font-weight: 700;
+  line-height: 1;
+}
+.eficiencia-label {
+  font-size: clamp(8px, 0.9vw, 11px);
+  color: var(--txt2);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.meta-turno-header {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(11px, 1.2vw, 14px);
+  color: var(--txt2);
+}
+
+/* TABLE */
+.tabela-tv-wrap {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+table.tabela-tv {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  flex: 1;
+}
+table.tabela-tv thead th {
+  background: var(--bg);
+  color: var(--txt2);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(10px, 1.1vw, 14px);
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 5px 6px;
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+}
+table.tabela-tv td {
+  padding: clamp(5px, 0.9vh, 12px) 6px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(14px, 2vw, 26px);
+  vertical-align: middle;
+}
+td.periodo-tv {
+  text-align: left;
+  padding-left: 8px;
+  font-family: 'Barlow', sans-serif;
+  font-size: clamp(12px, 1.4vw, 18px);
+}
+.periodo-tv .pid { font-weight: 700; color: var(--txt); }
+.periodo-tv .prange { font-size: 0.75em; color: var(--txt2); display: block; }
+.status-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(12px, 1.5vw, 20px);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+/* PERIODO ATUAL — pulsing */
+@keyframes pulse-row {
+  0%,100% { background-color: transparent; }
+  50%      { background-color: rgba(245,166,35,0.07); }
+}
+tr.periodo-ativo {
+  animation: pulse-row 2s ease-in-out infinite;
+  border-left: 3px solid var(--accent);
+}
+tr.periodo-ativo td.periodo-tv .pid { color: var(--accent); }
+
+/* COLUMN FOOTER */
+.col-footer {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 14px;
+  flex-shrink: 0;
+}
+.footer-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+.footer-stat { display: flex; flex-direction: column; align-items: center; }
+.footer-stat .lbl { font-size: clamp(8px, 0.9vw, 11px); color: var(--txt2); text-transform: uppercase; letter-spacing: 0.5px; }
+.footer-stat .val {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(16px, 2vw, 28px);
+  font-weight: 700;
+}
+.progress-track {
+  background: var(--border);
+  border-radius: 4px;
+  height: 8px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease;
+}
+.progress-pct {
+  text-align: right;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(10px, 1vw, 13px);
+  color: var(--txt2);
+  margin-top: 2px;
+}
+
+/* GLOBAL FOOTER */
+#global-footer {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 6px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+#clock {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(14px, 2vw, 26px);
+  color: var(--txt);
+  font-weight: 500;
+}
+#next-period {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: clamp(12px, 1.6vw, 20px);
+  color: var(--txt2);
+  letter-spacing: 0.5px;
+}
+#last-update {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: clamp(10px, 1vw, 13px);
+  color: var(--txt2);
+}
+
+/* FULLSCREEN HINT */
+#fs-hint {
+  position: fixed;
+  bottom: 50px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(28,28,28,0.9);
+  border: 1px solid var(--border);
+  color: var(--txt2);
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  z-index: 999;
+  transition: opacity 1s;
+}
+
+/* ALMOÇO overlay */
+.almoco-row td {
+  color: var(--txt2);
+  font-style: italic;
+  font-size: 0.85em;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div id="top-bar">
+  <span class="app-title">⬛ PAINEL ESTEIRA</span>
+  <div class="top-right">
+    <span id="top-date"></span>
+    <span id="refresh-indicator">↻</span>
+  </div>
+</div>
+
+<!-- MAIN -->
+<div id="main-columns">
+
+  <!-- COLUNA L1 -->
+  <div class="coluna" id="col-L1">
+    <div class="col-header">
+      <div class="linha-label">L1</div>
+      <div class="produto-nome-tv" id="L1-produto">—</div>
+      <div class="eficiencia-bloco">
+        <div class="eficiencia-pct" id="L1-eficiencia" style="color:var(--txt2)">—%</div>
+        <div class="eficiencia-label">Eficiência</div>
+      </div>
+      <div class="produto-specs-tv" id="L1-specs">
+        <span class="spec-chip"><span>VEL</span><span id="L1-vel">—</span></span>
+        <span class="spec-chip"><span>MED</span><span id="L1-med">—</span></span>
+        <span class="spec-chip"><span>CX/MIN</span><span id="L1-cxmin">—</span></span>
+      </div>
+    </div>
+    <div class="tabela-tv-wrap">
+      <table class="tabela-tv">
+        <thead>
+          <tr>
+            <th style="text-align:left">Período</th>
+            <th>Meta</th>
+            <th>Realizado</th>
+            <th>Saldo</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="L1-tbody"></tbody>
+      </table>
+    </div>
+    <div class="col-footer">
+      <div class="footer-stats">
+        <div class="footer-stat">
+          <span class="val" id="L1-acum-real" style="color:var(--txt)">—</span>
+          <span class="lbl">Realizado</span>
+        </div>
+        <div class="footer-stat">
+          <span class="val" id="L1-acum-meta" style="color:var(--txt2)">—</span>
+          <span class="lbl">Meta Acum.</span>
+        </div>
+        <div class="footer-stat">
+          <span class="val" id="L1-projecao" style="color:var(--accent)">—</span>
+          <span class="lbl">Projeção</span>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="L1-progress" style="width:0%;background:var(--txt2)"></div>
+      </div>
+      <div class="progress-pct" id="L1-progress-pct">0%</div>
+    </div>
+  </div>
+
+  <!-- DIVISOR -->
+  <div class="coluna-divider"></div>
+
+  <!-- COLUNA L2 -->
+  <div class="coluna" id="col-L2">
+    <div class="col-header">
+      <div class="linha-label">L2</div>
+      <div class="produto-nome-tv" id="L2-produto">—</div>
+      <div class="eficiencia-bloco">
+        <div class="eficiencia-pct" id="L2-eficiencia" style="color:var(--txt2)">—%</div>
+        <div class="eficiencia-label">Eficiência</div>
+      </div>
+      <div class="produto-specs-tv" id="L2-specs">
+        <span class="spec-chip"><span>VEL</span><span id="L2-vel">—</span></span>
+        <span class="spec-chip"><span>MED</span><span id="L2-med">—</span></span>
+        <span class="spec-chip"><span>CX/MIN</span><span id="L2-cxmin">—</span></span>
+      </div>
+    </div>
+    <div class="tabela-tv-wrap">
+      <table class="tabela-tv">
+        <thead>
+          <tr>
+            <th style="text-align:left">Período</th>
+            <th>Meta</th>
+            <th>Realizado</th>
+            <th>Saldo</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="L2-tbody"></tbody>
+      </table>
+    </div>
+    <div class="col-footer">
+      <div class="footer-stats">
+        <div class="footer-stat">
+          <span class="val" id="L2-acum-real" style="color:var(--txt)">—</span>
+          <span class="lbl">Realizado</span>
+        </div>
+        <div class="footer-stat">
+          <span class="val" id="L2-acum-meta" style="color:var(--txt2)">—</span>
+          <span class="lbl">Meta Acum.</span>
+        </div>
+        <div class="footer-stat">
+          <span class="val" id="L2-projecao" style="color:var(--accent)">—</span>
+          <span class="lbl">Projeção</span>
+        </div>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="L2-progress" style="width:0%;background:var(--txt2)"></div>
+      </div>
+      <div class="progress-pct" id="L2-progress-pct">0%</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- GLOBAL FOOTER -->
+<div id="global-footer">
+  <div id="clock">--:--:--</div>
+  <div id="next-period">—</div>
+  <div id="last-update">Carregando...</div>
+</div>
+
+<!-- FULLSCREEN HINT -->
+<div id="fs-hint" onclick="requestFS()">Clique para tela cheia ⛶</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIGURAÇÃO
+// ═══════════════════════════════════════════════════════════════
+const APPS_SCRIPT_URL   = "COLE_A_URL_AQUI";
+const REFRESH_INTERVAL  = 30000;
+const TOTAL_MIN         = 513;
+
+const PERIODOS = [
+  { id:"P1", label:"P1", inicio:"07:00", fim:"08:00", min:60 },
+  { id:"P2", label:"P2", inicio:"08:00", fim:"09:00", min:60 },
+  { id:"P3", label:"P3", inicio:"09:00", fim:"10:00", min:60 },
+  { id:"P4", label:"P4", inicio:"10:00", fim:"11:00", min:60 },
+  { id:"P5", label:"P5", inicio:"12:12", fim:"13:00", min:48 },
+  { id:"P6", label:"P6", inicio:"13:00", fim:"14:00", min:60 },
+  { id:"P7", label:"P7", inicio:"14:00", fim:"15:00", min:60 },
+  { id:"P8", label:"P8", inicio:"15:00", fim:"16:00", min:60 },
+  { id:"P9", label:"P9", inicio:"16:00", fim:"16:45", min:45 },
+];
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const tvState = {
+  L1: { registros: [], produto: null },
+  L2: { registros: [], produto: null },
+  lastUpdate: null
+};
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function hojeStr() {
+  const d = new Date();
+  return [d.getDate(), d.getMonth()+1, d.getFullYear()].map((n,i) => i===2?n:String(n).padStart(2,'0')).join('/');
+}
+
+function agoraTempo() {
+  const d = new Date();
+  return `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function parseHHMM(str) {
+  const p = str.split(':');
+  return parseInt(p[0])*60 + parseInt(p[1]);
+}
+
+function getPeriodoAtual() {
+  const agoraMin = parseHHMM(agoraTempo());
+  for (const p of PERIODOS) {
+    if (agoraMin >= parseHHMM(p.inicio) && agoraMin < parseHHMM(p.fim)) return p.id;
+  }
+  return null;
+}
+
+function getProximoPeriodo() {
+  const agoraMin = parseHHMM(agoraTempo());
+  for (const p of PERIODOS) {
+    const ini = parseHHMM(p.inicio);
+    if (ini > agoraMin) return { periodo: p, minFaltando: ini - agoraMin };
+  }
+  return null;
+}
+
+function calcCxMin(vel, medida) {
+  if (!vel || !medida) return 0;
+  return (vel * 1000) / medida;
+}
+
+function calcMeta(vel, medida, min) {
+  return Math.round(calcCxMin(vel, medida) * min);
+}
+
+function getCorPct(pct) {
+  if (pct >= 100) return 'var(--ok)';
+  if (pct >= 90)  return 'var(--warn)';
+  return 'var(--red)';
+}
+
+function fmtNum(n, dec=0) {
+  if (n == null || isNaN(n)) return '—';
+  return n.toFixed(dec).replace('.', ',');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════════
+async function apiFetch(url) {
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 8000);
+    const res  = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    return json.data;
+  } catch (e) {
+    return null;
+  }
+}
+
+function lsKey(data, linha) { return `tv_${data}_${linha}`; }
+
+function salvarCache(data, linha, registros) {
+  try { localStorage.setItem(lsKey(data, linha), JSON.stringify(registros)); } catch(e){}
+}
+
+function lerCache(data, linha) {
+  try { return JSON.parse(localStorage.getItem(lsKey(data, linha)) || '[]'); } catch(e) { return []; }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FETCH AND RENDER
+// ═══════════════════════════════════════════════════════════════
+async function fetchAndRender() {
+  const ind = document.getElementById('refresh-indicator');
+  ind.classList.add('ativo');
+
+  const hoje = hojeStr();
+  const [dataL1, dataL2] = await Promise.all([
+    apiFetch(`${APPS_SCRIPT_URL}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L1`),
+    apiFetch(`${APPS_SCRIPT_URL}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L2`)
+  ]);
+
+  for (const [linha, data] of [['L1', dataL1], ['L2', dataL2]]) {
+    if (data) {
+      salvarCache(hoje, linha, data);
+      tvState[linha].registros = data;
+    } else {
+      tvState[linha].registros = lerCache(hoje, linha);
+    }
+    renderColuna(linha);
+  }
+
+  tvState.lastUpdate = new Date();
+  document.getElementById('last-update').textContent =
+    'Atualizado: ' + tvState.lastUpdate.toLocaleTimeString('pt-BR');
+
+  ind.classList.remove('ativo');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER COLUNA
+// ═══════════════════════════════════════════════════════════════
+function renderColuna(linha) {
+  const registros = tvState[linha].registros;
+  const tbody = document.getElementById(linha + '-tbody');
+  tbody.innerHTML = '';
+
+  // Inferir produto do último registro
+  const lastReg = [...registros].reverse().find(r => r.vel && r.medida);
+  let vel = lastReg ? lastReg.vel : 0;
+  let medida = lastReg ? lastReg.medida : 0;
+  let produto = lastReg ? lastReg.produto : '—';
+
+  document.getElementById(linha + '-produto').textContent = produto;
+  document.getElementById(linha + '-vel').textContent    = vel ? fmtNum(vel,1) + ' m/min' : '—';
+  document.getElementById(linha + '-med').textContent    = medida ? fmtNum(medida,0) + ' mm' : '—';
+  document.getElementById(linha + '-cxmin').textContent  = vel && medida ? fmtNum(calcCxMin(vel,medida),2) : '—';
+
+  let acumReal = 0, acumMeta = 0, lastEfic = 0, lastProj = 0;
+  const regMap = {};
+  registros.forEach(r => { if (r.periodo) regMap[r.periodo] = r; });
+
+  PERIODOS.forEach(p => {
+    const reg = regMap[p.id];
+    const meta     = reg ? reg.meta     : (vel && medida ? calcMeta(vel, medida, p.min) : 0);
+    const realizado = reg ? reg.realizado : 0;
+    const saldo    = reg ? reg.saldo    : 0;
+    const pct      = reg ? reg.pct      : 0;
+    const temDados = !!reg;
+
+    acumMeta += meta;
+    acumReal  = reg ? reg.acum_real  : acumReal;
+    lastEfic  = reg ? reg.eficiencia : lastEfic;
+    lastProj  = reg ? reg.projecao   : lastProj;
+
+    const agoraMin = parseHHMM(agoraTempo());
+    const iniMin   = parseHHMM(p.inicio);
+    const fimMin   = parseHHMM(p.fim);
+    const ehAtual  = agoraMin >= iniMin && agoraMin < fimMin;
+    const ehPassado = agoraMin >= fimMin;
+    const ehFuturo = agoraMin < iniMin;
+
+    const cor    = temDados ? getCorPct(pct) : 'var(--txt2)';
+    const saldoStr = temDados ? (saldo > 0 ? '+'+saldo : String(saldo)) : '—';
+    const pctStr   = temDados ? fmtNum(pct,0)+'%' : '—';
+
+    let statusTxt = '—';
+    let statusCor = 'var(--txt2)';
+    if (ehFuturo) {
+      statusTxt = '·';
+      statusCor = 'var(--txt2)';
+    } else if (temDados) {
+      if (pct >= 100) { statusTxt = '✓ OK';   statusCor = 'var(--ok)'; }
+      else if (pct >= 90) { statusTxt = '! ATN'; statusCor = 'var(--warn)'; }
+      else { statusTxt = '✗ NOK'; statusCor = 'var(--red)'; }
+    } else if (ehAtual) {
+      statusTxt = '▶ EM CURSO'; statusCor = 'var(--accent)';
+    }
+
+    const tr = document.createElement('tr');
+    if (ehAtual) tr.classList.add('periodo-ativo');
+    tr.id = linha + '-row-' + p.id;
+    tr.innerHTML = `
+      <td class="periodo-tv">
+        <span class="pid">${p.id}</span>
+        <span class="prange">${p.inicio}–${p.fim}</span>
+      </td>
+      <td style="color:${ehFuturo?'var(--txt2)':'var(--txt)'}">${meta || '—'}</td>
+      <td style="color:${temDados?'var(--txt)':'var(--txt2)'}">${temDados ? realizado : '—'}</td>
+      <td style="color:${cor}">${saldoStr}</td>
+      <td class="status-badge" style="color:${statusCor}">${statusTxt}</td>
+    `;
+    tbody.appendChild(tr);
+
+    // Inserir marcador de almoço após P4
+    if (p.id === 'P4') {
+      const trAlmoco = document.createElement('tr');
+      trAlmoco.className = 'almoco-row';
+      trAlmoco.innerHTML = `<td class="periodo-tv" colspan="5" style="text-align:center;color:var(--txt2);padding:4px">— Almoço 11:00–12:12 —</td>`;
+      tbody.appendChild(trAlmoco);
+    }
+  });
+
+  // Atualizar eficiência
+  const efic = lastEfic || (acumMeta > 0 ? (acumReal / acumMeta * 100) : 0);
+  const efCor = efic >= 100 ? 'var(--ok)' : efic >= 90 ? 'var(--warn)' : efic > 0 ? 'var(--red)' : 'var(--txt2)';
+
+  document.getElementById(linha + '-eficiencia').textContent = efic > 0 ? fmtNum(efic,0)+'%' : '—%';
+  document.getElementById(linha + '-eficiencia').style.color = efCor;
+  document.getElementById(linha + '-acum-real').textContent  = fmtNum(acumReal,0);
+  document.getElementById(linha + '-acum-meta').textContent  = fmtNum(acumMeta,0);
+  document.getElementById(linha + '-projecao').textContent   = lastProj > 0 ? fmtNum(lastProj,0) : '—';
+
+  // Progress bar
+  const pBar  = Math.min(Math.max(efic, 0), 100);
+  const pFill = document.getElementById(linha + '-progress');
+  pFill.style.width      = pBar + '%';
+  pFill.style.background = efic >= 100 ? 'var(--ok)' : efic >= 90 ? 'var(--warn)' : efic > 0 ? 'var(--red)' : 'var(--txt2)';
+  document.getElementById(linha + '-progress-pct').textContent = fmtNum(efic,0) + '%';
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CLOCK & COUNTDOWN
+// ═══════════════════════════════════════════════════════════════
+function updateClock() {
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2,'0');
+  const mm = String(now.getMinutes()).padStart(2,'0');
+  const ss = String(now.getSeconds()).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  const mo = String(now.getMonth()+1).padStart(2,'0');
+  const yy = now.getFullYear();
+
+  document.getElementById('clock').textContent = `${hh}:${mm}:${ss}`;
+  document.getElementById('top-date').textContent = `${dd}/${mo}/${yy}`;
+
+  // Countdown próximo período
+  const prox = getProximoPeriodo();
+  const atualId = getPeriodoAtual();
+  if (prox) {
+    const m = Math.floor(prox.minFaltando);
+    const nomeProx = `${prox.periodo.id} ${prox.periodo.inicio}`;
+    if (atualId) {
+      document.getElementById('next-period').textContent = `Próx. período (${nomeProx}) em: ${m}min`;
+    } else {
+      // Entre períodos ou antes do turno
+      const agoraMin = parseHHMM(agoraTempo());
+      if (agoraMin < parseHHMM('07:00')) {
+        document.getElementById('next-period').textContent = 'Turno começa às 07:00';
+      } else if (agoraMin >= parseHHMM('11:00') && agoraMin < parseHHMM('12:12')) {
+        document.getElementById('next-period').textContent = `🍽 Almoço — retorno às 12:12 (${m}min)`;
+      } else {
+        document.getElementById('next-period').textContent = `Próx: ${nomeProx} em ${m}min`;
+      }
+    }
+  } else {
+    const agoraMin = parseHHMM(agoraTempo());
+    if (agoraMin >= parseHHMM('16:45')) {
+      document.getElementById('next-period').textContent = '✓ Turno encerrado';
+    } else {
+      document.getElementById('next-period').textContent = atualId ? `${atualId} em andamento` : '—';
+    }
+  }
+
+  // Atualizar destaque período atual
+  PERIODOS.forEach(p => {
+    ['L1','L2'].forEach(l => {
+      const row = document.getElementById(l + '-row-' + p.id);
+      if (row) row.classList.toggle('periodo-ativo', p.id === atualId);
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FULLSCREEN
+// ═══════════════════════════════════════════════════════════════
+function requestFS() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  const hint = document.getElementById('fs-hint');
+  hint.style.opacity = '0';
+  setTimeout(() => hint.style.display = 'none', 1000);
+}
+
+document.addEventListener('click', () => {
+  document.getElementById('fs-hint').style.display = 'none';
+});
+
+// Ocultar hint após 5s
+setTimeout(() => {
+  const h = document.getElementById('fs-hint');
+  if (h) { h.style.opacity = '0'; setTimeout(() => h.style.display='none', 1000); }
+}, 5000);
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+(function init() {
+  fetchAndRender();
+  setInterval(fetchAndRender, REFRESH_INTERVAL);
+  setInterval(updateClock, 1000);
+  updateClock();
+})();
+</script>
+</body>
+</html>

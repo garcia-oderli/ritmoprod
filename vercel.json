@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "vite build && cp esteira_operador.html dist/ && cp esteira_tv.html dist/",
+  "outputDirectory": "dist",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    { "src": "/operador", "dest": "/esteira_operador.html" },
+    { "src": "/tv",       "dest": "/esteira_tv.html"      },
+    { "src": "/(.*)",     "dest": "/$1"                   }
+  ]
+}
