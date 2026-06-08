@@ -4,29 +4,38 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Painel Esteira — Operador</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Barlow:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@zxing/library@0.19.1/umd/index.min.js"></script>
 <style>
 :root {
-  --bg:      #111111;
-  --surface: #1C1C1C;
-  --border:  #2A2A2A;
-  --accent:  #F5A623;
-  --ok:      #4CAF50;
-  --warn:    #FF9800;
-  --red:     #F44336;
-  --txt:     #F5F5F5;
-  --txt2:    #888888;
+  --bg:      #0f172a;
+  --surface: #1e293b;
+  --border:  #334155;
+  --accent:  #3b82f6;
+  --ok:      #22c55e;
+  --warn:    #f59e0b;
+  --red:     #dc2626;
+  --txt:     #f1f5f9;
+  --txt2:    #64748b;
   --radius:  8px;
 }
 *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { background: var(--bg); color: var(--txt); font-family: 'Barlow', sans-serif; font-size: 15px; min-height: 100%; }
-h1,h2,h3,.kpi { font-family: 'Barlow Condensed', sans-serif; }
-.mono { font-family: 'IBM Plex Mono', monospace; }
-button { cursor: pointer; border: none; font-family: 'Barlow Condensed', sans-serif; font-weight: 600; font-size: 14px; letter-spacing: 0.5px; border-radius: var(--radius); padding: 8px 16px; transition: opacity .15s, transform .1s; }
+html { background: var(--bg); }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  min-height: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6);
+}
+h1,h2,h3 { font-weight: 700; letter-spacing: -0.3px; }
+.mono { font-family: 'SF Mono','Fira Code','Cascadia Code',monospace; }
+button { cursor: pointer; border: none; font-family: inherit; font-weight: 600; font-size: 14px; letter-spacing: 0.3px; border-radius: var(--radius); padding: 8px 16px; transition: opacity .15s, transform .1s; }
 button:active { transform: scale(0.97); opacity: 0.85; }
-input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; font-family: 'IBM Plex Mono', monospace; font-size: 14px; width: 100%; outline: none; transition: border-color .2s; }
+input, select { background: var(--bg); color: var(--txt); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; font-family: inherit; font-size: 14px; width: 100%; outline: none; transition: border-color .2s; }
 input:focus, select:focus { border-color: var(--accent); }
 select option { background: var(--surface); }
 .hidden { display: none !important; }
@@ -44,18 +53,17 @@ select option { background: var(--surface); }
   top: 0;
   z-index: 100;
 }
-#header h1 { font-size: 22px; color: var(--accent); letter-spacing: 1px; white-space: nowrap; }
+#header h1 { font-size: 20px; color: var(--accent); letter-spacing: 0.5px; white-space: nowrap; }
 .linha-btns { display: flex; gap: 6px; }
 .linha-btn {
   background: var(--bg);
   color: var(--txt2);
   border: 1px solid var(--border);
   padding: 6px 18px;
-  font-size: 16px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 15px;
   font-weight: 700;
 }
-.linha-btn.ativo { background: var(--accent); color: #111; border-color: var(--accent); }
+.linha-btn.ativo { background: var(--accent); color: #fff; border-color: var(--accent); }
 #btn-tv { background: var(--border); color: var(--txt); font-size: 13px; padding: 6px 12px; }
 
 /* OFFLINE BANNER */
@@ -80,10 +88,9 @@ select option { background: var(--surface); }
   color: var(--txt2);
   border: 1px solid var(--border);
   padding: 8px 4px;
-  font-size: 13px;
-  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 .tab-btn.ativo { background: var(--surface); color: var(--accent); border-color: var(--accent); }
 .tab-content { display: none; }
@@ -133,7 +140,7 @@ select option { background: var(--surface); }
   margin-top: 10px;
 }
 .produto-card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-.produto-nome-card { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; color: var(--txt); line-height: 1.2; max-width: 70%; }
+.produto-nome-card { font-size: 17px; font-weight: 700; color: var(--txt); line-height: 1.2; max-width: 70%; }
 .produto-codigo-badge { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--txt2); background: var(--bg); padding: 3px 7px; border-radius: 4px; }
 .produto-specs-row { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
 .spec-item { display: flex; flex-direction: column; }
@@ -141,7 +148,7 @@ select option { background: var(--surface); }
 .spec-val { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: var(--accent); font-weight: 500; }
 .produto-meta-row { display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 8px; margin-top: 4px; }
 .meta-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
-.meta-item .val { font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 700; color: var(--txt); }
+.meta-item .val { font-size: 22px; font-weight: 800; color: var(--txt); }
 .meta-item .lbl { font-size: 10px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.5px; }
 #btn-trocar-produto { background: var(--border); color: var(--txt); font-size: 12px; padding: 6px 12px; margin-top: 10px; width: 100%; }
 
@@ -160,9 +167,8 @@ table { width: 100%; border-collapse: collapse; }
 th {
   background: var(--bg);
   color: var(--txt2);
-  font-family: 'Barlow Condensed', sans-serif;
   font-size: 11px;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   padding: 8px 6px;
   text-align: center;
@@ -175,7 +181,7 @@ td {
   padding: 6px 5px;
   text-align: center;
   border-bottom: 1px solid var(--border);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'SF Mono','Fira Code',monospace;
   font-size: 13px;
   vertical-align: middle;
 }
@@ -188,7 +194,7 @@ td.periodo-label {
   white-space: nowrap;
 }
 td.periodo-label .periodo-id { font-weight: 700; font-size: 13px; color: var(--txt); display: block; }
-tr.periodo-atual { background: rgba(245,166,35,0.08); border-left: 3px solid var(--accent); }
+tr.periodo-atual { background: rgba(59,130,246,0.08); border-left: 3px solid var(--accent); }
 tr.periodo-passado td.periodo-label { color: var(--txt2); }
 tr.periodo-futuro td { color: var(--txt2); }
 input.realizado-input {
@@ -221,72 +227,11 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
 }
 .total-item { display: flex; flex-direction: column; align-items: center; }
 .total-item .val {
-  font-family: 'Barlow Condensed', sans-serif;
   font-size: 20px;
-  font-weight: 700;
+  font-weight: 800;
 }
 .total-item .lbl { font-size: 10px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.5px; }
 
-/* SIMULAÇÕES */
-#simulacoes-section { padding: 12px 14px 80px; }
-#simulacoes-toggle {
-  background: var(--surface);
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 12px;
-  font-size: 15px;
-  letter-spacing: 0.5px;
-}
-.sim-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  margin-bottom: 10px;
-  overflow: hidden;
-}
-.sim-card summary {
-  padding: 12px 14px;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--accent);
-  cursor: pointer;
-  list-style: none;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  user-select: none;
-}
-.sim-card summary::after { content: "▼"; font-size: 12px; color: var(--txt2); transition: transform .2s; }
-.sim-card[open] summary::after { transform: rotate(180deg); }
-.sim-card summary::-webkit-details-marker { display: none; }
-.sim-body { padding: 12px 14px; border-top: 1px solid var(--border); }
-.sim-row { display: flex; gap: 8px; margin-bottom: 10px; align-items: flex-end; }
-.sim-row label { font-size: 12px; color: var(--txt2); display: block; margin-bottom: 4px; }
-.sim-row .field { flex: 1; }
-.sim-btn { background: var(--accent); color: #111; padding: 8px 16px; align-self: flex-end; }
-.sim-result {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 12px;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 13px;
-  line-height: 1.7;
-  color: var(--txt2);
-}
-.sim-result .highlight { color: var(--accent); font-size: 15px; font-weight: 500; }
-.sim-result .ok-val   { color: var(--ok); }
-.sim-result .warn-val { color: var(--warn); }
-.sim-result .bad-val  { color: var(--red); }
-.ranking-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-.ranking-table th { font-size: 10px; letter-spacing: 0.5px; color: var(--txt2); background: var(--bg); padding: 6px; text-align: left; }
-.ranking-table td { padding: 6px; border-bottom: 1px solid var(--border); }
-.ranking-table tr.rank-1 td { color: var(--accent); }
-.bar-bg { background: var(--border); border-radius: 3px; height: 6px; margin-top: 3px; }
-.bar-fill { height: 6px; border-radius: 3px; background: var(--accent); }
 
 /* MODAIS */
 .modal-overlay {
@@ -375,6 +320,7 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
   </div>
   <div style="display:flex;gap:6px;align-items:center">
     <div id="conn-dot" title="Status Sheets" style="width:9px;height:9px;border-radius:50%;background:var(--txt2);flex-shrink:0"></div>
+    <button onclick="abrirSim()" style="background:var(--border);color:var(--txt);font-size:13px;padding:6px 10px">📊</button>
     <button id="btn-config" onclick="abrirConfig()" style="background:var(--border);color:var(--txt);font-size:13px;padding:6px 10px">⚙</button>
     <button id="btn-tv" onclick="abrirTV()" style="background:var(--border);color:var(--txt);font-size:13px;padding:6px 10px">📺</button>
   </div>
@@ -573,79 +519,6 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
   <div class="total-item">
     <span class="val" id="tot-projecao" style="color:var(--accent)">—</span>
     <span class="lbl">Projeção</span>
-  </div>
-</div>
-
-<!-- SIMULAÇÕES -->
-<div id="simulacoes-section">
-  <button id="simulacoes-toggle" onclick="toggleSimulacoes()">▶ SIMULAÇÕES</button>
-  <div id="simulacoes-body" class="hidden">
-
-    <!-- SIM 1 -->
-    <details class="sim-card">
-      <summary>SIM 1 — Capacidade</summary>
-      <div class="sim-body">
-        <div class="sim-row">
-          <div class="field">
-            <label>VEL (m/min)</label>
-            <input type="number" id="s1-vel" placeholder="8.5" step="0.1" min="0">
-          </div>
-          <div class="field">
-            <label>MEDIDA (mm)</label>
-            <input type="number" id="s1-med" placeholder="350" step="1" min="0">
-          </div>
-          <div class="field">
-            <label>Entre Pç (mm)</label>
-            <input type="number" id="s1-entre" placeholder="20" step="1" min="0">
-          </div>
-          <button class="sim-btn" onclick="calcSim1()">CALC</button>
-        </div>
-        <div id="s1-result" class="sim-result hidden"></div>
-      </div>
-    </details>
-
-    <!-- SIM 2 -->
-    <details class="sim-card">
-      <summary>SIM 2 — Meta Reversa</summary>
-      <div class="sim-body">
-        <div class="sim-row">
-          <div class="field">
-            <label>Qtd desejada (cx)</label>
-            <input type="number" id="s2-qtd" placeholder="5000">
-          </div>
-          <div class="field">
-            <label>MEDIDA (mm)</label>
-            <input type="number" id="s2-med" placeholder="350">
-          </div>
-          <button class="sim-btn" onclick="calcSim2()">CALC</button>
-        </div>
-        <div id="s2-result" class="sim-result hidden"></div>
-      </div>
-    </details>
-
-    <!-- SIM 3 -->
-    <details class="sim-card" id="sim3-card">
-      <summary onclick="carregarSim3()">SIM 3 — Ranking Produtos</summary>
-      <div class="sim-body">
-        <div id="s3-result" class="sim-result">Clique no título para carregar...</div>
-      </div>
-    </details>
-
-    <!-- SIM 4 -->
-    <details class="sim-card">
-      <summary>SIM 4 — Cenário de Parada</summary>
-      <div class="sim-body">
-        <div class="sim-row">
-          <div class="field">
-            <label>Duração da parada (min)</label>
-            <input type="number" id="s4-min" placeholder="15" min="1">
-          </div>
-          <button class="sim-btn" onclick="calcSim4()">CALC</button>
-        </div>
-        <div id="s4-result" class="sim-result hidden"></div>
-      </div>
-    </details>
-
   </div>
 </div>
 
@@ -1439,146 +1312,8 @@ async function confirmarParada() {
   showToast(`✓ Parada registrada: ${minutos} min`, 'ok');
 }
 
-// ═══════════════════════════════════════════════════════════════
-// SIMULAÇÕES
-// ═══════════════════════════════════════════════════════════════
-function toggleSimulacoes() {
-  const body = document.getElementById('simulacoes-body');
-  const btn  = document.getElementById('simulacoes-toggle');
-  const aberto = !body.classList.contains('hidden');
-  body.classList.toggle('hidden', aberto);
-  btn.textContent = aberto ? '▶ SIMULAÇÕES' : '▼ FECHAR SIMULAÇÕES';
-}
-
-function calcSim1() {
-  const vel    = parseFloat(document.getElementById('s1-vel').value);
-  const medida = parseFloat(document.getElementById('s1-med').value);
-  const ep     = parseFloat(document.getElementById('s1-entre').value) || 0;
-  if (!vel || !medida) { showToast('Informe VEL e MEDIDA', 'err'); return; }
-
-  const cxm = calcCxMin(vel, medida, ep);
-  let linhas = `<div>Cx/min: <span class="highlight">${fmtNum(cxm,2)}</span></div>`;
-  linhas    += `<div>Cx/hora: <span class="highlight">${fmtNum(cxm*60,0)}</span></div>`;
-  linhas    += `<div>Meta turno (${TOTAL_MIN}min): <span class="highlight">${fmtNum(cxm*TOTAL_MIN,0)}</span></div>`;
-  linhas    += '<br><table style="width:100%;border-collapse:collapse;font-size:12px"><tr style="color:var(--txt2)"><td>Período</td><td>Min</td><td>Meta</td></tr>';
-  PERIODOS.forEach(p => {
-    const m = calcMeta(vel, medida, p.min, ep);
-    linhas += `<tr><td>${p.id} ${p.label}</td><td>${p.min}</td><td style="color:var(--accent)">${m}</td></tr>`;
-  });
-  linhas += '</table>';
-
-  const div = document.getElementById('s1-result');
-  div.innerHTML = linhas;
-  div.classList.remove('hidden');
-}
-
-function calcSim2() {
-  const qtd    = parseFloat(document.getElementById('s2-qtd').value);
-  const medida = parseFloat(document.getElementById('s2-med').value);
-  const ep     = state.produto ? (state.produto.entre_pecas || 0) : 0;
-  if (!qtd || !medida) { showToast('Informe Qtd e MEDIDA', 'err'); return; }
-
-  const velNecessaria = (qtd / TOTAL_MIN) * ((medida + ep) / 1000);
-  const cxmNec = (velNecessaria * 1000) / (medida + ep);
-  const tempoNec = qtd / cxmNec;
-  const cabe = tempoNec <= TOTAL_MIN;
-  const saldo = TOTAL_MIN - tempoNec;
-  const corCabe = cabe ? 'ok-val' : 'bad-val';
-  const velAtual = state.produto ? state.produto.vel : null;
-
-  let html = `
-    <div>VEL necessária: <span class="highlight">${fmtNum(velNecessaria,2)} m/min</span></div>
-    <div>Cx/min necessário: <span class="highlight">${fmtNum(cxmNec,2)}</span></div>
-    <div>Tempo necessário: <span class="highlight">${fmtNum(tempoNec,0)} min</span></div>
-    <div>Cabe no turno? <span class="${corCabe}">${cabe ? '✓ SIM (' + fmtNum(Math.abs(saldo),0) + ' min sobrando)' : '✗ NÃO (faltam ' + fmtNum(Math.abs(saldo),0) + ' min)'}</span></div>
-  `;
-  if (velAtual) {
-    const diff = velNecessaria - velAtual;
-    const corDiff = diff > 0 ? 'warn-val' : 'ok-val';
-    html += `<div>vs. VEL atual (${fmtNum(velAtual,1)}): <span class="${corDiff}">${diff > 0 ? '+' : ''}${fmtNum(diff,2)} m/min</span></div>`;
-  }
-
-  const div = document.getElementById('s2-result');
-  div.innerHTML = html;
-  div.classList.remove('hidden');
-}
-
-let sim3Carregado = false;
-async function carregarSim3() {
-  if (sim3Carregado) return;
-  const div = document.getElementById('s3-result');
-  div.innerHTML = 'Carregando produtos...';
-
-  const prods = await apiFetch(`?acao=produtos`) || lerCacheProdutos();
-  if (!prods || prods.length === 0) {
-    div.innerHTML = '<span class="warn-val">Nenhum produto encontrado</span>';
-    return;
-  }
-  if (prods.length > 0) salvarCacheProdutos(prods);
-
-  const comCalc = prods
-    .filter(p => p.vel > 0 && p.medida > 0)
-    .map(p => ({ ...p, cxmin: calcCxMin(p.vel, p.medida, p.entre_pecas || 0), meta: calcMetaTurno(p.vel, p.medida, p.entre_pecas || 0) }))
-    .sort((a,b) => b.cxmin - a.cxmin);
-
-  const maxMeta = comCalc[0]?.meta || 1;
-
-  let html = '<table class="ranking-table"><thead><tr><th>#</th><th>Produto</th><th>Cx/min</th><th>Meta Turno</th></tr></thead><tbody>';
-  comCalc.slice(0,20).forEach((p,i) => {
-    const pct = (p.meta / maxMeta * 100);
-    const destaque = i === 0 ? 'rank-1' : '';
-    html += `<tr class="${destaque}">
-      <td>${i+1}</td>
-      <td>${p.codigo}<br><small style="color:var(--txt2)">${p.descricao.substring(0,25)}</small></td>
-      <td>${fmtNum(p.cxmin,2)}</td>
-      <td>
-        ${fmtNum(p.meta,0)}
-        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
-      </td>
-    </tr>`;
-  });
-  html += '</tbody></table>';
-  div.innerHTML = html;
-  div.className = '';
-  sim3Carregado = true;
-}
-
-function calcSim4() {
-  const minParada = parseFloat(document.getElementById('s4-min').value);
-  if (!minParada || minParada <= 0) { showToast('Informe duração > 0', 'err'); return; }
-  if (!state.produto) { showToast('Selecione um produto primeiro', 'err'); return; }
-
-  const cxm = calcCxMin(state.produto.vel, state.produto.medida, state.produto.entre_pecas || 0);
-  const cxmAcel = cxm * state.fatorAceleracao;
-  const caixasPerdidas = Math.round(cxm * minParada);
-
-  // Minutos restantes no turno
-  const agoraMin = parseHHMM(agoraTempo());
-  let minDecorridos = 0;
-  PERIODOS.forEach(p => {
-    const ini2 = parseHHMM(p.inicio);
-    const fim2 = parseHHMM(p.fim);
-    if (agoraMin >= fim2) minDecorridos += p.min;
-    else if (agoraMin > ini2) minDecorridos += (agoraMin - ini2);
-  });
-  const minRestantes = Math.max(0, TOTAL_MIN - minDecorridos - minParada);
-
-  const minParaRecuperar = caixasPerdidas / cxmAcel;
-  const recuperavel = minParaRecuperar <= minRestantes;
-
-  const corRec = recuperavel ? 'ok-val' : 'bad-val';
-  const html = `
-    <div>Cx/min atual: <span class="highlight">${fmtNum(cxm,2)}</span></div>
-    <div>Caixas perdidas: <span class="bad-val">${fmtNum(caixasPerdidas,0)} cx</span></div>
-    <div>Meta ajustada: <span class="highlight">${fmtNum(calcMetaTurno(state.produto.vel,state.produto.medida,state.produto.entre_pecas||0) - caixasPerdidas,0)} cx</span></div>
-    <div>Cx/min com aceleração (${fmtNum(state.fatorAceleracao*100-100,0)}%): <span class="warn-val">${fmtNum(cxmAcel,2)}</span></div>
-    <div>Tempo para recuperar: <span class="highlight">${fmtNum(minParaRecuperar,0)} min</span></div>
-    <div>Recuperável? <span class="${corRec}">${recuperavel ? '✓ SIM (' + fmtNum(minRestantes,0) + ' min restantes)' : '✗ NÃO — déficit de ' + fmtNum(minParaRecuperar - minRestantes,0) + ' min'}</span></div>
-  `;
-
-  const div = document.getElementById('s4-result');
-  div.innerHTML = html;
-  div.classList.remove('hidden');
+function abrirSim() {
+  window.open('simulacoes.html', '_blank');
 }
 
 // ═══════════════════════════════════════════════════════════════

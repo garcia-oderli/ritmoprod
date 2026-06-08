@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Simulações — Painel Esteira</title>
+<style>
+:root {
+  --bg:      #0f172a;
+  --surface: #1e293b;
+  --border:  #334155;
+  --accent:  #3b82f6;
+  --ok:      #22c55e;
+  --warn:    #f59e0b;
+  --red:     #dc2626;
+  --txt:     #f1f5f9;
+  --txt2:    #64748b;
+  --radius:  8px;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { background: var(--bg); }
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  min-height: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6);
+}
+.mono { font-family: 'SF Mono','Fira Code','Cascadia Code',monospace; }
+button { cursor: pointer; border: none; font-family: inherit; font-weight: 600; font-size: 14px; letter-spacing: 0.3px; border-radius: var(--radius); padding: 8px 16px; transition: opacity .15s, transform .1s; }
+button:active { transform: scale(0.97); opacity: 0.85; }
+input { background: var(--bg); color: var(--txt); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 12px; font-family: inherit; font-size: 14px; width: 100%; outline: none; transition: border-color .2s; }
+input:focus { border-color: var(--accent); }
+.hidden { display: none !important; }
+
+/* HEADER */
+#header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+#header h1 { font-size: 18px; color: var(--accent); letter-spacing: 0.5px; flex: 1; }
+#btn-back {
+  background: var(--border);
+  color: var(--txt);
+  font-size: 13px;
+  padding: 6px 12px;
+}
+
+/* CARDS */
+.sim-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin: 12px 14px 0;
+  overflow: hidden;
+}
+.sim-card summary {
+  padding: 14px 16px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+.sim-card summary::after { content: "▼"; font-size: 11px; color: var(--txt2); transition: transform .2s; }
+.sim-card[open] summary::after { transform: rotate(180deg); }
+.sim-card summary::-webkit-details-marker { display: none; }
+.sim-body { padding: 14px 16px; border-top: 1px solid var(--border); }
+.sim-label { font-size: 11px; color: var(--txt2); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; display: block; margin-bottom: 5px; }
+.sim-row { display: flex; gap: 10px; margin-bottom: 12px; align-items: flex-end; flex-wrap: wrap; }
+.sim-row .field { flex: 1; min-width: 80px; }
+.sim-btn { background: var(--accent); color: #fff; padding: 9px 18px; align-self: flex-end; font-size: 13px; font-weight: 700; }
+.sim-result {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px;
+  font-family: 'SF Mono','Fira Code',monospace;
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--txt2);
+  margin-top: 4px;
+}
+.sim-result .hi  { color: var(--accent); font-size: 15px; font-weight: 600; }
+.sim-result .ok  { color: var(--ok); }
+.sim-result .wn  { color: var(--warn); }
+.sim-result .bad { color: var(--red); }
+
+/* RANKING */
+.rank-table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+.rank-table th { font-size: 10px; letter-spacing: 0.5px; color: var(--txt2); background: var(--bg); padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border); }
+.rank-table td { padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.rank-table tr.rank-1 td { color: var(--accent); }
+.bar-bg  { background: var(--border); border-radius: 3px; height: 5px; margin-top: 3px; }
+.bar-fill { height: 5px; border-radius: 3px; background: var(--accent); }
+
+/* FOOTER */
+#footer { height: 40px; }
+</style>
+</head>
+<body>
+
+<div id="header">
+  <button id="btn-back" onclick="history.back()">← Voltar</button>
+  <h1>📊 Simulações</h1>
+</div>
+
+<!-- SIM 1 -->
+<details class="sim-card" open>
+  <summary>1 — Capacidade</summary>
+  <div class="sim-body">
+    <div class="sim-row">
+      <div class="field">
+        <label class="sim-label">VEL (m/min)</label>
+        <input type="number" id="s1-vel" placeholder="8.5" step="0.1" min="0">
+      </div>
+      <div class="field">
+        <label class="sim-label">MEDIDA (mm)</label>
+        <input type="number" id="s1-med" placeholder="350" step="1" min="0">
+      </div>
+      <div class="field">
+        <label class="sim-label">Entre Pç (mm)</label>
+        <input type="number" id="s1-entre" placeholder="20" step="1" min="0">
+      </div>
+      <button class="sim-btn" onclick="calcSim1()">CALC</button>
+    </div>
+    <div id="s1-result" class="sim-result hidden"></div>
+  </div>
+</details>
+
+<!-- SIM 2 -->
+<details class="sim-card">
+  <summary>2 — Meta Reversa</summary>
+  <div class="sim-body">
+    <div class="sim-row">
+      <div class="field">
+        <label class="sim-label">Qtd desejada (cx)</label>
+        <input type="number" id="s2-qtd" placeholder="5000">
+      </div>
+      <div class="field">
+        <label class="sim-label">MEDIDA (mm)</label>
+        <input type="number" id="s2-med" placeholder="350">
+      </div>
+      <div class="field">
+        <label class="sim-label">Entre Pç (mm)</label>
+        <input type="number" id="s2-entre" placeholder="20">
+      </div>
+      <button class="sim-btn" onclick="calcSim2()">CALC</button>
+    </div>
+    <div id="s2-result" class="sim-result hidden"></div>
+  </div>
+</details>
+
+<!-- SIM 3 -->
+<details class="sim-card" id="sim3-card">
+  <summary onclick="carregarSim3()">3 — Ranking de Produtos</summary>
+  <div class="sim-body">
+    <div id="s3-result" class="sim-result">Clique no título para carregar...</div>
+  </div>
+</details>
+
+<!-- SIM 4 -->
+<details class="sim-card">
+  <summary>4 — Cenário de Parada</summary>
+  <div class="sim-body">
+    <div class="sim-row">
+      <div class="field">
+        <label class="sim-label">VEL (m/min)</label>
+        <input type="number" id="s4-vel" placeholder="8.5" step="0.1" min="0">
+      </div>
+      <div class="field">
+        <label class="sim-label">MEDIDA (mm)</label>
+        <input type="number" id="s4-med" placeholder="350" step="1" min="0">
+      </div>
+      <div class="field">
+        <label class="sim-label">Entre Pç (mm)</label>
+        <input type="number" id="s4-entre" placeholder="20" step="1" min="0">
+      </div>
+    </div>
+    <div class="sim-row">
+      <div class="field">
+        <label class="sim-label">Duração da parada (min)</label>
+        <input type="number" id="s4-min" placeholder="15" min="1">
+      </div>
+      <button class="sim-btn" onclick="calcSim4()">CALC</button>
+    </div>
+    <div id="s4-result" class="sim-result hidden"></div>
+  </div>
+</details>
+
+<div id="footer"></div>
+
+<script>
+const TOTAL_MIN = 513;
+const PERIODOS = [
+  { id:"P1", label:"07:00–08:00", inicio:"07:00", fim:"08:00", min:60 },
+  { id:"P2", label:"08:00–09:00", inicio:"08:00", fim:"09:00", min:60 },
+  { id:"P3", label:"09:00–10:00", inicio:"09:00", fim:"10:00", min:60 },
+  { id:"P4", label:"10:00–11:00", inicio:"10:00", fim:"11:00", min:60 },
+  { id:"P5", label:"12:12–13:00", inicio:"12:12", fim:"13:00", min:48 },
+  { id:"P6", label:"13:00–14:00", inicio:"13:00", fim:"14:00", min:60 },
+  { id:"P7", label:"14:00–15:00", inicio:"14:00", fim:"15:00", min:60 },
+  { id:"P8", label:"15:00–16:00", inicio:"15:00", fim:"16:00", min:60 },
+  { id:"P9", label:"16:00–16:45", inicio:"16:00", fim:"16:45", min:45 },
+];
+
+function getAppsScriptURL() {
+  return localStorage.getItem('esteira_apps_url') || "";
+}
+
+function getFatorFadiga() {
+  return (parseFloat(localStorage.getItem('esteira_fadiga_pct')) || 0) / 100;
+}
+
+function getFatorAcel() {
+  return parseFloat(localStorage.getItem('esteira_fator_acel')) || 1.10;
+}
+
+function calcCxMin(vel, medida, ep) {
+  if (!vel || !medida) return 0;
+  return (vel * 1000) / (medida + (ep || 0));
+}
+
+function calcMeta(vel, medida, min, ep) {
+  const teorico = calcCxMin(vel, medida, ep) * min;
+  return Math.round(teorico * (1 - getFatorFadiga()));
+}
+
+function calcMetaTurno(vel, medida, ep) {
+  return calcMeta(vel, medida, TOTAL_MIN, ep);
+}
+
+function fmtNum(n, dec=0) {
+  if (n == null || isNaN(n)) return '—';
+  return n.toFixed(dec).replace('.', ',');
+}
+
+async function apiFetch(path) {
+  const base = getAppsScriptURL();
+  if (!base) return null;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(base + path, { redirect: 'follow', signal: controller.signal });
+    clearTimeout(timer);
+    const json = await res.json();
+    return json.ok ? json.data : null;
+  } catch(e) { return null; }
+}
+
+function lerCacheProdutos() {
+  try { return JSON.parse(localStorage.getItem('esteira_produtos') || '[]'); }
+  catch(e) { return []; }
+}
+
+// ── SIM 1 — Capacidade ───────────────────────────────────────────
+function calcSim1() {
+  const vel    = parseFloat(document.getElementById('s1-vel').value);
+  const medida = parseFloat(document.getElementById('s1-med').value);
+  const ep     = parseFloat(document.getElementById('s1-entre').value) || 0;
+  if (!vel || !medida) { alert('Informe VEL e MEDIDA'); return; }
+
+  const cxm = calcCxMin(vel, medida, ep);
+  const fadPct = getFatorFadiga() * 100;
+  const fadInfo = fadPct > 0 ? ` <span class="wn">(-${fmtNum(fadPct,1)}% fadiga)</span>` : '';
+
+  let html = `
+    <div>Cx/min teórico: <span class="hi">${fmtNum(cxm,2)}</span></div>
+    <div>Meta/hora: <span class="hi">${fmtNum(calcMeta(vel,medida,60,ep),0)} cx</span>${fadInfo}</div>
+    <div>Meta turno (${TOTAL_MIN}min): <span class="hi">${fmtNum(calcMetaTurno(vel,medida,ep),0)} cx</span></div>
+  `;
+  html += '<br><table style="width:100%;border-collapse:collapse;font-size:12px">';
+  html += '<tr style="color:var(--txt2)"><td style="padding:3px">Período</td><td style="padding:3px;text-align:right">Min</td><td style="padding:3px;text-align:right">Meta</td></tr>';
+  PERIODOS.forEach(p => {
+    const m = calcMeta(vel, medida, p.min, ep);
+    html += `<tr><td style="padding:3px;color:var(--txt2)">${p.id} ${p.label}</td><td style="padding:3px;text-align:right">${p.min}</td><td style="padding:3px;text-align:right;color:var(--accent)">${m}</td></tr>`;
+  });
+  html += '</table>';
+
+  const div = document.getElementById('s1-result');
+  div.innerHTML = html;
+  div.classList.remove('hidden');
+}
+
+// ── SIM 2 — Meta Reversa ─────────────────────────────────────────
+function calcSim2() {
+  const qtd    = parseFloat(document.getElementById('s2-qtd').value);
+  const medida = parseFloat(document.getElementById('s2-med').value);
+  const ep     = parseFloat(document.getElementById('s2-entre').value) || 0;
+  if (!qtd || !medida) { alert('Informe Qtd e MEDIDA'); return; }
+
+  const velNec = (qtd / TOTAL_MIN) * ((medida + ep) / 1000);
+  const cxmNec = (velNec * 1000) / (medida + ep);
+  const tempoNec = qtd / cxmNec;
+  const cabe = tempoNec <= TOTAL_MIN;
+  const saldo = TOTAL_MIN - tempoNec;
+
+  const html = `
+    <div>VEL necessária: <span class="hi">${fmtNum(velNec,2)} m/min</span></div>
+    <div>Cx/min: <span class="hi">${fmtNum(cxmNec,2)}</span></div>
+    <div>Tempo necessário: <span class="hi">${fmtNum(tempoNec,0)} min</span></div>
+    <div>Cabe no turno? <span class="${cabe?'ok':'bad'}">${cabe ? '✓ SIM (' + fmtNum(Math.abs(saldo),0) + ' min sobrando)' : '✗ NÃO (faltam ' + fmtNum(Math.abs(saldo),0) + ' min)'}</span></div>
+  `;
+
+  const div = document.getElementById('s2-result');
+  div.innerHTML = html;
+  div.classList.remove('hidden');
+}
+
+// ── SIM 3 — Ranking ──────────────────────────────────────────────
+let sim3Carregado = false;
+async function carregarSim3() {
+  if (sim3Carregado) return;
+  const div = document.getElementById('s3-result');
+  div.textContent = 'Carregando produtos...';
+
+  const prods = (await apiFetch('?acao=produtos')) || lerCacheProdutos();
+  if (!prods || prods.length === 0) {
+    div.innerHTML = '<span class="wn">Nenhum produto encontrado — verifique a URL do Apps Script</span>';
+    return;
+  }
+
+  const lista = prods
+    .filter(p => p.vel > 0 && p.medida > 0)
+    .map(p => ({ ...p, cxmin: calcCxMin(p.vel, p.medida, p.entre_pecas||0), meta: calcMetaTurno(p.vel, p.medida, p.entre_pecas||0) }))
+    .sort((a,b) => b.cxmin - a.cxmin);
+
+  const maxMeta = lista[0]?.meta || 1;
+
+  let html = '<table class="rank-table"><thead><tr><th>#</th><th>Produto</th><th>Cx/min</th><th>Meta Turno</th></tr></thead><tbody>';
+  lista.slice(0, 30).forEach((p, i) => {
+    const pct = (p.meta / maxMeta * 100);
+    const cls = i === 0 ? 'rank-1' : '';
+    html += `<tr class="${cls}">
+      <td style="color:var(--txt2)">${i+1}</td>
+      <td><div>${p.codigo}</div><div style="font-size:11px;color:var(--txt2)">${p.descricao.substring(0,28)}</div></td>
+      <td style="text-align:right">${fmtNum(p.cxmin,2)}</td>
+      <td style="text-align:right">
+        ${fmtNum(p.meta,0)}
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%"></div></div>
+      </td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+
+  div.innerHTML = html;
+  div.style.padding = '0';
+  div.style.border  = 'none';
+  div.style.background = 'transparent';
+  sim3Carregado = true;
+}
+
+// ── SIM 4 — Cenário de Parada ────────────────────────────────────
+function calcSim4() {
+  const vel      = parseFloat(document.getElementById('s4-vel').value);
+  const medida   = parseFloat(document.getElementById('s4-med').value);
+  const ep       = parseFloat(document.getElementById('s4-entre').value) || 0;
+  const minParada = parseFloat(document.getElementById('s4-min').value);
+  if (!vel || !medida) { alert('Informe VEL e MEDIDA'); return; }
+  if (!minParada || minParada <= 0) { alert('Informe duração > 0'); return; }
+
+  const fatorAcel = getFatorAcel();
+  const cxm = calcCxMin(vel, medida, ep);
+  const cxmAcel = cxm * fatorAcel;
+  const caixasPerdidas = Math.round(cxm * minParada);
+  const metaTurno = calcMetaTurno(vel, medida, ep);
+  const metaAjustada = metaTurno - caixasPerdidas;
+  const minParaRecuperar = caixasPerdidas / cxmAcel;
+
+  const html = `
+    <div>Cx/min: <span class="hi">${fmtNum(cxm,2)}</span></div>
+    <div>Caixas perdidas: <span class="bad">${fmtNum(caixasPerdidas,0)} cx</span></div>
+    <div>Meta turno: <span class="hi">${fmtNum(metaTurno,0)} cx</span></div>
+    <div>Meta ajustada: <span class="${metaAjustada>=0?'hi':'bad'}">${fmtNum(metaAjustada,0)} cx</span></div>
+    <div>Cx/min acelerado (+${fmtNum((fatorAcel-1)*100,0)}%): <span class="wn">${fmtNum(cxmAcel,2)}</span></div>
+    <div>Tempo para recuperar: <span class="hi">${fmtNum(minParaRecuperar,0)} min</span></div>
+  `;
+
+  const div = document.getElementById('s4-result');
+  div.innerHTML = html;
+  div.classList.remove('hidden');
+}
+</script>
+</body>
+</html>
