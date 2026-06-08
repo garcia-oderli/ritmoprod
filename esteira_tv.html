@@ -521,8 +521,8 @@ function fmtNum(n, dec=0) {
 async function apiFetch(url) {
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const res  = await fetch(url, { signal: controller.signal });
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const res  = await fetch(url, { redirect: 'follow', signal: controller.signal });
     clearTimeout(timer);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error);

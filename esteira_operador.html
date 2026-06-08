@@ -751,8 +751,8 @@ async function testarConexao() {
   if (!url) { div.style.color='var(--red)'; div.textContent='⚠ URL não informada'; return; }
   try {
     const controller = new AbortController();
-    setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(`${url}?acao=config`, { signal: controller.signal });
+    setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(`${url}?acao=config`, { redirect: 'follow', signal: controller.signal });
     const json = await res.json();
     if (json.ok) {
       div.style.color = 'var(--ok)';
@@ -860,8 +860,8 @@ async function apiFetch(path, opts={}) {
   const url = path.startsWith('http') ? path : base + path;
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
-    const res = await fetch(url, { ...opts, signal: controller.signal });
+    const timer = setTimeout(() => controller.abort(), 10000);
+    const res = await fetch(url, { ...opts, redirect: 'follow', signal: controller.signal });
     clearTimeout(timer);
     const json = await res.json();
     if (!json.ok) throw new Error(json.error || 'Erro API');
