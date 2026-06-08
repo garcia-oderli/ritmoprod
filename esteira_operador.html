@@ -373,7 +373,42 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
     <button class="linha-btn ativo" onclick="setLinha('L1')">L1</button>
     <button class="linha-btn"       onclick="setLinha('L2')">L2</button>
   </div>
-  <button id="btn-tv" onclick="abrirTV()">📺 TV</button>
+  <div style="display:flex;gap:6px;align-items:center">
+    <div id="conn-dot" title="Status Sheets" style="width:9px;height:9px;border-radius:50%;background:var(--txt2);flex-shrink:0"></div>
+    <button id="btn-config" onclick="abrirConfig()" style="background:var(--border);color:var(--txt);font-size:13px;padding:6px 10px">⚙</button>
+    <button id="btn-tv" onclick="abrirTV()" style="background:var(--border);color:var(--txt);font-size:13px;padding:6px 10px">📺</button>
+  </div>
+</div>
+
+<!-- MODAL CONFIG -->
+<div id="modal-config" class="modal-overlay hidden">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h2>⚙ Configurações</h2>
+      <button class="modal-close" onclick="fecharConfig()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>URL do Google Apps Script</label>
+        <input type="url" id="cfg-url" placeholder="https://script.google.com/macros/s/..." style="font-size:12px">
+        <div style="font-size:11px;color:var(--txt2);margin-top:4px">Cole a URL gerada após publicar o esteira_script.gs como Web App</div>
+      </div>
+      <div class="form-group">
+        <label>Turno início</label>
+        <input type="time" id="cfg-turno-inicio" value="07:00">
+      </div>
+      <div class="form-group">
+        <label>Turno fim</label>
+        <input type="time" id="cfg-turno-fim" value="16:45">
+      </div>
+      <div id="cfg-test-result" class="hidden" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;margin-top:8px"></div>
+    </div>
+    <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
+      <button class="btn-cancel" onclick="testarConexao()" style="flex:none;padding:10px 16px;border-color:var(--accent);color:var(--accent)">Testar conexão</button>
+      <button class="btn-cancel" onclick="fecharConfig()">Cancelar</button>
+      <button class="btn-confirm" onclick="salvarConfig()">✓ Salvar</button>
+    </div>
+  </div>
 </div>
 
 <!-- PRODUTO SECTION -->
@@ -653,9 +688,67 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
 
 <script>
 // ═══════════════════════════════════════════════════════════════
-// CONFIGURAÇÃO
+// CONFIGURAÇÃO (salva em localStorage)
 // ═══════════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL = "COLE_A_URL_AQUI";
+function getAppsScriptURL() {
+  return localStorage.getItem('esteira_apps_url') || '';
+}
+
+function atualizarConnDot() {
+  const url = getAppsScriptURL();
+  const dot = document.getElementById('conn-dot');
+  if (!dot) return;
+  dot.style.background = url && url !== 'COLE_A_URL_AQUI' ? 'var(--ok)' : 'var(--red)';
+  dot.title = url ? 'Sheets: ' + url.substring(0, 40) + '…' : 'Sheets não configurado';
+}
+
+function abrirConfig() {
+  document.getElementById('cfg-url').value = getAppsScriptURL();
+  document.getElementById('cfg-turno-inicio').value = localStorage.getItem('esteira_turno_inicio') || '07:00';
+  document.getElementById('cfg-turno-fim').value    = localStorage.getItem('esteira_turno_fim')    || '16:45';
+  document.getElementById('cfg-test-result').classList.add('hidden');
+  document.getElementById('modal-config').classList.remove('hidden');
+}
+
+function fecharConfig() {
+  document.getElementById('modal-config').classList.add('hidden');
+}
+
+function salvarConfig() {
+  const url = document.getElementById('cfg-url').value.trim();
+  localStorage.setItem('esteira_apps_url', url);
+  localStorage.setItem('esteira_turno_inicio', document.getElementById('cfg-turno-inicio').value);
+  localStorage.setItem('esteira_turno_fim',    document.getElementById('cfg-turno-fim').value);
+  fecharConfig();
+  atualizarConnDot();
+  showToast('✓ Configurações salvas', 'ok');
+  carregarRegistros();
+}
+
+async function testarConexao() {
+  const url = document.getElementById('cfg-url').value.trim();
+  const div = document.getElementById('cfg-test-result');
+  div.classList.remove('hidden');
+  div.style.color = 'var(--txt2)';
+  div.textContent = 'Testando conexão…';
+  if (!url) { div.style.color='var(--red)'; div.textContent='⚠ URL não informada'; return; }
+  try {
+    const controller = new AbortController();
+    setTimeout(() => controller.abort(), 8000);
+    const res = await fetch(`${url}?acao=config`, { signal: controller.signal });
+    const json = await res.json();
+    if (json.ok) {
+      div.style.color = 'var(--ok)';
+      div.textContent = '✓ Conexão OK — Sheets respondeu';
+    } else {
+      div.style.color = 'var(--warn)';
+      div.textContent = '⚠ Sheets respondeu com erro: ' + json.error;
+    }
+  } catch(e) {
+    div.style.color = 'var(--red)';
+    div.textContent = '✗ Falha: ' + (e.name === 'AbortError' ? 'Timeout (8s)' : e.message);
+  }
+}
 
 const PERIODOS = [
   { id:"P1", label:"07:00–08:00", inicio:"07:00", fim:"08:00", min:60 },
@@ -744,7 +837,10 @@ function fmtNum(n, dec=0) {
 // ═══════════════════════════════════════════════════════════════
 // API
 // ═══════════════════════════════════════════════════════════════
-async function apiFetch(url, opts={}) {
+async function apiFetch(path, opts={}) {
+  const base = getAppsScriptURL();
+  if (!base) { document.getElementById('offline-banner').classList.remove('hidden'); return null; }
+  const url = path.startsWith('http') ? path : base + path;
   try {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 8000);
@@ -803,7 +899,8 @@ function setTab(tab) {
   document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('ativo', ['ean','codigo','manual'][i] === tab));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('ativo'));
   document.getElementById('tab-' + tab).classList.add('ativo');
-  if (tab !== 'ean') stopScan();
+  if (tab === 'ean') startScan();
+  else stopScan();
 }
 
 function abrirTV() {
@@ -851,7 +948,7 @@ async function buscarEAN() {
 
 async function handleEANResult(ean) {
   showToast('Buscando produto...', 'ok');
-  const data = await apiFetch(`${APPS_SCRIPT_URL}?acao=buscarEAN&ean=${encodeURIComponent(ean)}`);
+  const data = await apiFetch(`?acao=buscarEAN&ean=${encodeURIComponent(ean)}`);
   if (data) {
     setProduto(data);
   } else {
@@ -866,7 +963,7 @@ async function handleEANResult(ean) {
 async function buscarCodigo() {
   const codigo = document.getElementById('codigo-input').value.trim().toUpperCase();
   if (!codigo) return;
-  const data = await apiFetch(`${APPS_SCRIPT_URL}?acao=buscarCodigo&codigo=${encodeURIComponent(codigo)}`);
+  const data = await apiFetch(`?acao=buscarCodigo&codigo=${encodeURIComponent(codigo)}`);
   if (data) {
     setProduto(data);
   } else {
@@ -1116,7 +1213,7 @@ async function salvarRegistroAPI(periodoId) {
   salvarCache(state.data, state.linha, cacheArr);
 
   // Enviar API
-  const result = await apiFetch(`${APPS_SCRIPT_URL}?acao=salvarRegistro`, {
+  const result = await apiFetch(`?acao=salvarRegistro`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -1150,7 +1247,7 @@ async function confirmarTroca() {
 
   let descricao = '';
   if (codigo) {
-    const prod = await apiFetch(`${APPS_SCRIPT_URL}?acao=buscarCodigo&codigo=${encodeURIComponent(codigo)}`);
+    const prod = await apiFetch(`?acao=buscarCodigo&codigo=${encodeURIComponent(codigo)}`);
     if (prod) {
       descricao = prod.descricao;
       state.produto = prod;
@@ -1212,7 +1309,7 @@ async function confirmarParada() {
     motivo
   };
 
-  const result = await apiFetch(`${APPS_SCRIPT_URL}?acao=salvarParada`, {
+  const result = await apiFetch(`?acao=salvarParada`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body)
@@ -1290,7 +1387,7 @@ async function carregarSim3() {
   const div = document.getElementById('s3-result');
   div.innerHTML = 'Carregando produtos...';
 
-  const prods = await apiFetch(`${APPS_SCRIPT_URL}?acao=produtos`) || lerCacheProdutos();
+  const prods = await apiFetch(`?acao=produtos`) || lerCacheProdutos();
   if (!prods || prods.length === 0) {
     div.innerHTML = '<span class="warn-val">Nenhum produto encontrado</span>';
     return;
@@ -1366,7 +1463,7 @@ function calcSim4() {
 // CARREGAR DADOS
 // ═══════════════════════════════════════════════════════════════
 async function carregarRegistros() {
-  const apiData = await apiFetch(`${APPS_SCRIPT_URL}?acao=registros&data=${encodeURIComponent(state.data)}&linha=${state.linha}`);
+  const apiData = await apiFetch(`?acao=registros&data=${encodeURIComponent(state.data)}&linha=${state.linha}`);
 
   let lista = apiData;
   if (lista) {
@@ -1394,7 +1491,7 @@ async function carregarRegistros() {
 }
 
 async function carregarConfig() {
-  const cfg = await apiFetch(`${APPS_SCRIPT_URL}?acao=config`);
+  const cfg = await apiFetch(`?acao=config`);
   if (cfg && cfg.FATOR_ACELERACAO) {
     state.fatorAceleracao = parseFloat(cfg.FATOR_ACELERACAO) || 1.10;
   }
@@ -1404,14 +1501,24 @@ async function carregarConfig() {
 // INIT
 // ═══════════════════════════════════════════════════════════════
 (async function init() {
+  atualizarConnDot();
+
+  // Solicitar URL se ainda não configurada
+  if (!getAppsScriptURL()) {
+    setTimeout(() => {
+      showToast('Configure a URL do Sheets em ⚙', 'err');
+      abrirConfig();
+    }, 800);
+    renderTabela();
+    return;
+  }
+
   await carregarConfig();
   await carregarRegistros();
 
-  // Atualizar período atual a cada minuto
   setInterval(() => renderTabela(), 60000);
 
-  // Pré-carregar produtos em background
-  const prods = await apiFetch(`${APPS_SCRIPT_URL}?acao=produtos`);
+  const prods = await apiFetch(`?acao=produtos`);
   if (prods) salvarCacheProdutos(prods);
 })();
 </script>

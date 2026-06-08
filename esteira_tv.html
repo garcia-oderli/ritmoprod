@@ -432,8 +432,10 @@ tr.periodo-ativo td.periodo-tv .pid { color: var(--accent); }
 // ═══════════════════════════════════════════════════════════════
 // CONFIGURAÇÃO
 // ═══════════════════════════════════════════════════════════════
-const APPS_SCRIPT_URL   = "COLE_A_URL_AQUI";
 const REFRESH_INTERVAL  = 30000;
+function getAppsScriptURL() {
+  return localStorage.getItem('esteira_apps_url') || '';
+}
 const TOTAL_MIN         = 513;
 
 const PERIODOS = [
@@ -548,8 +550,8 @@ async function fetchAndRender() {
 
   const hoje = hojeStr();
   const [dataL1, dataL2] = await Promise.all([
-    apiFetch(`${APPS_SCRIPT_URL}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L1`),
-    apiFetch(`${APPS_SCRIPT_URL}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L2`)
+    apiFetch(`${getAppsScriptURL()}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L1`),
+    apiFetch(`${getAppsScriptURL()}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L2`)
   ]);
 
   for (const [linha, data] of [['L1', dataL1], ['L2', dataL2]]) {
