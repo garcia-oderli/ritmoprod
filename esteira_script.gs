@@ -1,0 +1,314 @@
+// ═══════════════════════════════════════════════════════════════════════════
+// PAINEL ESTEIRA — Apps Script Backend
+// Planilha: MODELO_HORA_A_HORA
+// ═══════════════════════════════════════════════════════════════════════════
+
+var ABA_PRODUTO  = "PRODUTO_CODIGO";
+var ABA_HORA     = "HORA_A_HORA";
+var ABA_PARADAS  = "PARADAS";
+var ABA_CONFIG   = "CONFIG";
+
+// ── RESPONSE HELPER ──────────────────────────────────────────────────────────
+
+function makeResponse(data) {
+  var json = JSON.stringify(data);
+  return ContentService
+    .createTextOutput(json)
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function ok(data) {
+  return makeResponse({ ok: true, data: data });
+}
+
+function err(msg) {
+  return makeResponse({ ok: false, error: String(msg) });
+}
+
+// ── doGet ────────────────────────────────────────────────────────────────────
+
+function doGet(e) {
+  try {
+    var acao = (e.parameter.acao || "").trim();
+
+    if (acao === "produtos") {
+      return ok(getProdutos());
+    }
+    if (acao === "buscarEAN") {
+      var ean = (e.parameter.ean || "").trim();
+      return ok(buscarPorEAN(ean));
+    }
+    if (acao === "buscarCodigo") {
+      var codigo = (e.parameter.codigo || "").trim();
+      return ok(buscarPorCodigo(codigo));
+    }
+    if (acao === "registros") {
+      var data  = (e.parameter.data  || "").trim();
+      var linha = (e.parameter.linha || "").trim();
+      return ok(getRegistros(data, linha));
+    }
+    if (acao === "config") {
+      return ok(getConfig());
+    }
+
+    return err("acao invalida: " + acao);
+  } catch (ex) {
+    return err(ex.message);
+  }
+}
+
+// ── doPost ───────────────────────────────────────────────────────────────────
+
+function doPost(e) {
+  try {
+    var acao = (e.parameter.acao || "").trim();
+    var body = {};
+
+    try {
+      body = JSON.parse(e.postData.contents || "{}");
+    } catch (parseErr) {
+      return err("JSON inválido: " + parseErr.message);
+    }
+
+    if (acao === "salvarRegistro") {
+      salvarRegistro(body);
+      return ok(null);
+    }
+    if (acao === "salvarParada") {
+      salvarParada(body);
+      return ok(null);
+    }
+
+    return err("acao invalida: " + acao);
+  } catch (ex) {
+    return err(ex.message);
+  }
+}
+
+// ── PRODUTO_CODIGO ────────────────────────────────────────────────────────────
+
+function getProdutos() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_PRODUTO);
+  if (!sheet) return [];
+
+  var rows = sheet.getDataRange().getValues();
+  var result = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+    result.push({
+      codigo:    String(r[0] || "").trim(),
+      descricao: String(r[1] || "").trim(),
+      pb:        String(r[2] || "").trim(),
+      ean128:    String(r[3] || "").trim(),
+      medida:    parseFloat(r[4]) || 0,
+      vel:       parseFloat(r[5]) || 0
+    });
+  }
+
+  return result;
+}
+
+function buscarPorEAN(ean) {
+  if (!ean) return null;
+  var produtos = getProdutos();
+  for (var i = 0; i < produtos.length; i++) {
+    if (produtos[i].ean128 === ean) return produtos[i];
+  }
+  return null;
+}
+
+function buscarPorCodigo(codigo) {
+  if (!codigo) return null;
+  var upper = codigo.toUpperCase();
+  var produtos = getProdutos();
+  for (var i = 0; i < produtos.length; i++) {
+    if (produtos[i].codigo.toUpperCase() === upper) return produtos[i];
+  }
+  return null;
+}
+
+// ── HORA_A_HORA ───────────────────────────────────────────────────────────────
+// Colunas: A=Data B=Linha C=Produto D=VEL E=MEDIDA F=MIN_P G=Meta H=Realizado
+//          I=Saldo J=Pct K=Acum_real L=Acum_meta M=Eficiencia N=Projecao O=Periodo
+
+function getRegistros(data, linha) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_HORA);
+  if (!sheet) return [];
+
+  var tz   = Session.getScriptTimeZone();
+  var rows = sheet.getDataRange().getValues();
+  var result = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+
+    var rowData  = "";
+    try {
+      rowData = Utilities.formatDate(r[0], tz, "dd/MM/yyyy");
+    } catch (ex) {
+      rowData = String(r[0]);
+    }
+    var rowLinha = String(r[1] || "").trim();
+
+    var dataMatch  = !data  || rowData  === data;
+    var linhaMatch = !linha || rowLinha === linha;
+    if (!dataMatch || !linhaMatch) continue;
+
+    result.push({
+      data:       rowData,
+      linha:      rowLinha,
+      produto:    String(r[2] || "").trim(),
+      vel:        parseFloat(r[3])  || 0,
+      medida:     parseFloat(r[4])  || 0,
+      min_p:      parseFloat(r[5])  || 0,
+      meta:       parseFloat(r[6])  || 0,
+      realizado:  parseFloat(r[7])  || 0,
+      saldo:      parseFloat(r[8])  || 0,
+      pct:        parseFloat(r[9])  || 0,
+      acum_real:  parseFloat(r[10]) || 0,
+      acum_meta:  parseFloat(r[11]) || 0,
+      eficiencia: parseFloat(r[12]) || 0,
+      projecao:   parseFloat(r[13]) || 0,
+      periodo:    String(r[14] || "").trim()
+    });
+  }
+
+  return result;
+}
+
+function salvarRegistro(body) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_HORA);
+  if (!sheet) throw new Error("Aba " + ABA_HORA + " não encontrada.");
+
+  var tz       = Session.getScriptTimeZone();
+  var rows     = sheet.getDataRange().getValues();
+  var dataFmt  = String(body.data  || "").trim();
+  var linhaStr = String(body.linha || "").trim();
+  var periodoStr = String(body.periodo || "").trim();
+
+  var targetRow = -1;
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+    var rowData = "";
+    try {
+      rowData = Utilities.formatDate(r[0], tz, "dd/MM/yyyy");
+    } catch (ex) {
+      rowData = String(r[0]);
+    }
+    var rowLinha  = String(r[1]  || "").trim();
+    var rowPer    = String(r[14] || "").trim();
+
+    if (rowData === dataFmt && rowLinha === linhaStr && rowPer === periodoStr) {
+      targetRow = i + 1;
+      break;
+    }
+  }
+
+  var dateObj = parseDataBR(body.data);
+  var rowValues = [
+    dateObj,
+    body.linha     || "",
+    body.produto   || "",
+    parseFloat(body.vel)       || 0,
+    parseFloat(body.medida)    || 0,
+    parseFloat(body.min_p)     || 0,
+    parseFloat(body.meta)      || 0,
+    parseFloat(body.realizado) || 0,
+    parseFloat(body.saldo)     || 0,
+    parseFloat(body.pct)       || 0,
+    parseFloat(body.acum_real) || 0,
+    parseFloat(body.acum_meta) || 0,
+    parseFloat(body.eficiencia)|| 0,
+    parseFloat(body.projecao)  || 0,
+    periodoStr
+  ];
+
+  if (targetRow > 0) {
+    sheet.getRange(targetRow, 1, 1, rowValues.length).setValues([rowValues]);
+  } else {
+    sheet.appendRow(rowValues);
+  }
+}
+
+// ── PARADAS ───────────────────────────────────────────────────────────────────
+
+function salvarParada(body) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_PARADAS);
+  if (!sheet) throw new Error("Aba " + ABA_PARADAS + " não encontrada.");
+
+  var dateObj  = parseDataBR(body.data);
+  var inicio   = String(body.inicio  || "").trim();
+  var fim      = String(body.fim     || "").trim();
+  var motivo   = String(body.motivo  || "").trim();
+  var minutos  = parseFloat(body.minutos) || calcMinutos(inicio, fim);
+
+  sheet.appendRow([dateObj, body.linha || "", inicio, fim, minutos, motivo]);
+}
+
+function calcMinutos(inicio, fim) {
+  try {
+    var ini = parseHHMM(inicio);
+    var end = parseHHMM(fim);
+    var diff = (end - ini) / 60000;
+    return diff >= 0 ? diff : 0;
+  } catch (ex) {
+    return 0;
+  }
+}
+
+function parseHHMM(str) {
+  var parts = String(str).split(":");
+  var h = parseInt(parts[0]) || 0;
+  var m = parseInt(parts[1]) || 0;
+  var d = new Date();
+  d.setHours(h, m, 0, 0);
+  return d.getTime();
+}
+
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+
+function getConfig() {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_CONFIG);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(ABA_CONFIG);
+    var defaults = [
+      ["TURNO_INICIO",    "07:00"],
+      ["TURNO_FIM",       "16:45"],
+      ["TOTAL_MIN",       513],
+      ["FATOR_ACELERACAO",1.10]
+    ];
+    sheet.getRange(1, 1, defaults.length, 2).setValues(defaults);
+  }
+
+  var rows = sheet.getDataRange().getValues();
+  var cfg  = {};
+  for (var i = 0; i < rows.length; i++) {
+    if (rows[i][0]) cfg[String(rows[i][0]).trim()] = rows[i][1];
+  }
+  return cfg;
+}
+
+// ── DATE HELPER ───────────────────────────────────────────────────────────────
+
+function parseDataBR(str) {
+  var parts = String(str || "").split("/");
+  if (parts.length === 3) {
+    var d = parseInt(parts[0]);
+    var m = parseInt(parts[1]) - 1;
+    var y = parseInt(parts[2]);
+    if (!isNaN(d) && !isNaN(m) && !isNaN(y)) {
+      return new Date(y, m, d);
+    }
+  }
+  return new Date();
+}
