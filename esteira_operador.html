@@ -415,13 +415,29 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
 <div class="section">
   <div class="section-title">Produto</div>
   <div class="tab-bar">
-    <button class="tab-btn ativo" onclick="setTab('ean')">📷 EAN</button>
+    <button class="tab-btn ativo" onclick="setTab('leitor')">🔫 LEITOR</button>
+    <button class="tab-btn" onclick="setTab('ean')">📷 EAN</button>
     <button class="tab-btn" onclick="setTab('codigo')">🔍 CÓDIGO</button>
     <button class="tab-btn" onclick="setTab('manual')">✏️ MANUAL</button>
   </div>
 
+  <!-- TAB LEITOR -->
+  <div id="tab-leitor" class="tab-content ativo">
+    <div style="text-align:center;padding:16px 0 8px;color:var(--txt2);font-size:13px;letter-spacing:0.5px;text-transform:uppercase">Aponte o leitor para o código de barras</div>
+    <div style="position:relative">
+      <input type="text" id="leitor-input"
+        placeholder="Aguardando leitura..."
+        inputmode="none"
+        autocomplete="off"
+        style="font-size:20px;text-align:center;padding:14px;letter-spacing:2px;caret-color:var(--accent)"
+        oninput="onLeitorInput(this.value)"
+        onkeydown="if(event.key==='Enter'){onLeitorEnter();event.preventDefault()}">
+    </div>
+    <div id="leitor-status" style="text-align:center;margin-top:10px;font-size:13px;color:var(--txt2);min-height:20px"></div>
+  </div>
+
   <!-- TAB EAN -->
-  <div id="tab-ean" class="tab-content ativo">
+  <div id="tab-ean" class="tab-content">
     <div id="video-container">
       <video id="video-preview" autoplay muted playsinline></video>
       <div id="scan-overlay"><div class="scan-frame"></div></div>
@@ -896,11 +912,67 @@ function setLinha(l) {
 }
 
 function setTab(tab) {
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('ativo', ['ean','codigo','manual'][i] === tab));
+  const tabs = ['leitor','ean','codigo','manual'];
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('ativo', tabs[i] === tab));
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('ativo'));
   document.getElementById('tab-' + tab).classList.add('ativo');
   if (tab === 'ean') startScan();
   else stopScan();
+  if (tab === 'leitor') {
+    setTimeout(() => {
+      const el = document.getElementById('leitor-input');
+      if (el) el.focus();
+    }, 100);
+  }
+}
+
+// ── LEITOR USB/BLUETOOTH ─────────────────────────────────────────
+let leitorBuffer = '';
+let leitorTimer  = null;
+
+function onLeitorInput(val) {
+  leitorBuffer = val;
+  clearTimeout(leitorTimer);
+  // Leitors físicos geralmente enviam tudo + Enter em <100ms
+  leitorTimer = setTimeout(() => {
+    if (leitorBuffer.length >= 3) onLeitorEnter();
+  }, 150);
+}
+
+async function onLeitorEnter() {
+  const val = (leitorBuffer || document.getElementById('leitor-input').value).trim();
+  document.getElementById('leitor-input').value = '';
+  leitorBuffer = '';
+  if (!val) return;
+
+  const status = document.getElementById('leitor-status');
+  status.style.color = 'var(--txt2)';
+  status.textContent = 'Buscando: ' + val + '…';
+
+  // Tenta como EAN primeiro, depois como código
+  let produto = await apiFetch(`?acao=buscarEAN&ean=${encodeURIComponent(val)}`);
+  if (!produto) produto = await apiFetch(`?acao=buscarCodigo&codigo=${encodeURIComponent(val)}`);
+
+  // Fallback cache
+  if (!produto) {
+    const prods = lerCacheProdutos();
+    produto = prods.find(p => p.ean128 === val || p.codigo.toUpperCase() === val.toUpperCase()) || null;
+  }
+
+  if (produto) {
+    status.style.color = 'var(--ok)';
+    status.textContent = '✓ ' + (produto.descricao || produto.codigo);
+    setProduto(produto);
+  } else {
+    status.style.color = 'var(--red)';
+    status.textContent = '✗ Não encontrado: ' + val;
+  }
+
+  // Manter foco para próxima leitura
+  setTimeout(() => {
+    const el = document.getElementById('leitor-input');
+    if (el) el.focus();
+  }, 200);
 }
 
 function abrirTV() {
