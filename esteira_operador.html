@@ -706,8 +706,9 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
 // ═══════════════════════════════════════════════════════════════
 // CONFIGURAÇÃO (salva em localStorage)
 // ═══════════════════════════════════════════════════════════════
+const DEFAULT_APPS_URL = "https://script.google.com/macros/s/AKfycbxqgPlcGASCaTKrxj6xGJXbTFErs-YQPHJ89E9GRF4foNtkdHdegcrjiCS55M1tAmbj/exec";
 function getAppsScriptURL() {
-  return localStorage.getItem('esteira_apps_url') || '';
+  return localStorage.getItem('esteira_apps_url') || DEFAULT_APPS_URL;
 }
 
 function atualizarConnDot() {
@@ -1574,22 +1575,9 @@ async function carregarConfig() {
 // ═══════════════════════════════════════════════════════════════
 (async function init() {
   atualizarConnDot();
-
-  // Solicitar URL se ainda não configurada
-  if (!getAppsScriptURL()) {
-    setTimeout(() => {
-      showToast('Configure a URL do Sheets em ⚙', 'err');
-      abrirConfig();
-    }, 800);
-    renderTabela();
-    return;
-  }
-
   await carregarConfig();
   await carregarRegistros();
-
   setInterval(() => renderTabela(), 60000);
-
   const prods = await apiFetch(`?acao=produtos`);
   if (prods) salvarCacheProdutos(prods);
 })();
