@@ -401,6 +401,11 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
         <label>Turno fim</label>
         <input type="time" id="cfg-turno-fim" value="16:45">
       </div>
+      <div class="form-group">
+        <label>Fadiga / Fator de eficiência esperada (%)</label>
+        <input type="number" id="cfg-fadiga" placeholder="ex: 5" min="0" max="50" step="0.5" value="0">
+        <div style="font-size:11px;color:var(--txt2);margin-top:4px">Desconto aplicado à meta teórica. Ex: 5 = meta reduzida em 5%</div>
+      </div>
       <div id="cfg-test-result" class="hidden" style="background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:12px;margin-top:8px"></div>
     </div>
     <div class="modal-footer" style="flex-wrap:wrap;gap:8px">
@@ -522,6 +527,9 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
         <span class="val" id="card-meta-hora">—</span>
         <span class="lbl">cx/hora</span>
       </div>
+    </div>
+    <div style="margin-top:4px;min-height:16px">
+      <span id="card-fadiga-badge" style="display:none;font-size:11px;color:var(--warn);font-family:'IBM Plex Mono',monospace;background:rgba(255,152,0,0.1);border:1px solid rgba(255,152,0,0.3);border-radius:4px;padding:2px 7px"></span>
     </div>
     <button id="btn-trocar-produto" onclick="abrirModalTroca()">⇄ TROCAR PRODUTO</button>
   </div>
@@ -736,9 +744,10 @@ function atualizarConnDot() {
 }
 
 function abrirConfig() {
-  document.getElementById('cfg-url').value = getAppsScriptURL();
+  document.getElementById('cfg-url').value          = getAppsScriptURL();
   document.getElementById('cfg-turno-inicio').value = localStorage.getItem('esteira_turno_inicio') || '07:00';
   document.getElementById('cfg-turno-fim').value    = localStorage.getItem('esteira_turno_fim')    || '16:45';
+  document.getElementById('cfg-fadiga').value       = fmtNum((state.fatorFadiga || 0) * 100, 1).replace(',','.');
   document.getElementById('cfg-test-result').classList.add('hidden');
   document.getElementById('modal-config').classList.remove('hidden');
 }
@@ -748,12 +757,17 @@ function fecharConfig() {
 }
 
 function salvarConfig() {
-  const url = document.getElementById('cfg-url').value.trim();
-  localStorage.setItem('esteira_apps_url', url);
-  localStorage.setItem('esteira_turno_inicio', document.getElementById('cfg-turno-inicio').value);
-  localStorage.setItem('esteira_turno_fim',    document.getElementById('cfg-turno-fim').value);
+  const url    = document.getElementById('cfg-url').value.trim();
+  const fadiga = Math.min(50, Math.max(0, parseFloat(document.getElementById('cfg-fadiga').value) || 0));
+  localStorage.setItem('esteira_apps_url',      url);
+  localStorage.setItem('esteira_turno_inicio',  document.getElementById('cfg-turno-inicio').value);
+  localStorage.setItem('esteira_turno_fim',     document.getElementById('cfg-turno-fim').value);
+  localStorage.setItem('esteira_fadiga_pct',    fadiga);
+  state.fatorFadiga = fadiga / 100;
   fecharConfig();
   atualizarConnDot();
+  renderProdutoCard();
+  renderTabela();
   showToast('✓ Configurações salvas', 'ok');
   carregarRegistros();
 }
@@ -804,11 +818,12 @@ const MOTIVOS_PADRAO = ["Falta de material","Manutenção corretiva","Troca de p
 const state = {
   linha: "L1",
   data: hojeStr(),
-  produto: null,         // { codigo, descricao, vel, medida }
+  produto: null,         // { codigo, descricao, vel, medida, entre_pecas }
   registros: {},         // { P1: { realizado, meta, saldo, pct } }
-  swapHistory: [],       // [{ hora, vel, medida, codigo }]
+  swapHistory: [],       // [{ hora, vel, medida, entre_pecas, codigo }]
   motivoSelecionado: "",
-  fatorAceleracao: 1.10
+  fatorAceleracao: 1.10,
+  fatorFadiga: 0         // 0–1 (ex: 0.05 = 5% de fadiga)
 };
 
 // ═══════════════════════════════════════════════════════════════
@@ -848,7 +863,8 @@ function calcCxMin(vel, medida, ep) {
 }
 
 function calcMeta(vel, medida, min, ep) {
-  return Math.round(calcCxMin(vel, medida, ep) * min);
+  const teorico = calcCxMin(vel, medida, ep) * min;
+  return Math.round(teorico * (1 - (state.fatorFadiga || 0)));
 }
 
 function calcMetaTurno(vel, medida, ep) {
@@ -1095,8 +1111,14 @@ function renderProdutoCard() {
   document.getElementById('card-entre').textContent   = fmtNum(ep,0) + ' mm';
   document.getElementById('card-vel').textContent     = fmtNum(p.vel,1) + ' m/min';
   document.getElementById('card-cxmin').textContent   = fmtNum(cxm,2) + ' cx/min';
-  document.getElementById('card-meta-turno').textContent = fmtNum(calcMetaTurno(p.vel, p.medida, ep),0);
+  const fadiga = state.fatorFadiga || 0;
+  const metaTurnoEl = document.getElementById('card-meta-turno');
+  metaTurnoEl.textContent = fmtNum(calcMetaTurno(p.vel, p.medida, ep),0);
+  metaTurnoEl.title = fadiga > 0 ? `Fadiga ${fmtNum(fadiga*100,1)}% aplicada` : '';
   document.getElementById('card-meta-hora').textContent  = fmtNum(calcMeta(p.vel, p.medida, 60, ep),0);
+  const fadBadge = document.getElementById('card-fadiga-badge');
+  if (fadBadge) fadBadge.style.display = fadiga > 0 ? 'inline' : 'none';
+  if (fadBadge) fadBadge.textContent = `-${fmtNum(fadiga*100,1)}% fadiga`;
   document.getElementById('produto-card').classList.remove('hidden');
 }
 
@@ -1602,6 +1624,10 @@ async function carregarConfig() {
 // INIT
 // ═══════════════════════════════════════════════════════════════
 (async function init() {
+  // Carregar fadiga do localStorage antes de qualquer render
+  const fadSalvo = parseFloat(localStorage.getItem('esteira_fadiga_pct')) || 0;
+  state.fatorFadiga = fadSalvo / 100;
+
   atualizarConnDot();
   await carregarConfig();
   await carregarRegistros();
