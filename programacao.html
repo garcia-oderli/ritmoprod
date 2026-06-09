@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programação do Dia — Esteira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0A0A0B;
+  --surface: #18181B;
+  --surface2:#222226;
+  --border:  #3F3F46;
+  --accent:  #FF5C1F;
+  --ok:      #16A34A;
+  --warn:    #EAB308;
+  --red:     #DC2626;
+  --txt:     #FAFAFA;
+  --txt2:    #71717A;
+  --radius:  10px;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* NAV */
+nav {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  padding: 10px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+.nav-brand {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+.nav-links { display: flex; gap: 8px; }
+.nav-links a {
+  color: var(--txt2);
+  text-decoration: none;
+  font-size: 13px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+.nav-links a:hover, .nav-links a.active { background: var(--surface2); color: var(--txt); }
+
+/* LAYOUT */
+.container { max-width: 1100px; margin: 0 auto; padding: 24px 20px; }
+h2 { font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--txt2);
+  margin-bottom: 14px;
+}
+
+/* TOP BAR — data + load */
+.date-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+input[type="date"] {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--txt);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  padding: 8px 12px;
+  outline: none;
+}
+input[type="date"]:focus { border-color: var(--accent); }
+
+/* SEARCH */
+.search-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 130px auto auto;
+  gap: 10px;
+  align-items: end;
+}
+label {
+  font-size: 12px;
+  color: var(--txt2);
+  display: block;
+  margin-bottom: 5px;
+}
+select, input[type="text"], input[type="number"] {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  color: var(--txt);
+  font-family: 'Inter', system-ui, sans-serif;
+  font-size: 14px;
+  padding: 8px 12px;
+  outline: none;
+}
+select:focus, input[type="text"]:focus, input[type="number"]:focus {
+  border-color: var(--accent);
+}
+input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
+
+.btn {
+  padding: 9px 18px;
+  border-radius: 7px;
+  border: none;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { opacity: 0.85; }
+.btn-accent { background: var(--accent); color: #fff; }
+.btn-outline {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--txt2);
+}
+.btn-outline:hover { border-color: var(--txt2); color: var(--txt); }
+.btn-ok   { background: rgba(22,163,74,0.15); color: var(--ok); border: 1px solid rgba(22,163,74,0.3); }
+.btn-red  { background: rgba(220,38,38,0.12); color: var(--red); border: 1px solid rgba(220,38,38,0.25); padding: 6px 10px; font-size: 13px; }
+.btn-sm   { padding: 5px 10px; font-size: 12px; }
+
+/* PRODUTO PREVIEW */
+#produto-preview {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 14px;
+  display: none;
+  gap: 20px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+#produto-preview.visible { display: flex; }
+.preview-nome { font-weight: 600; font-size: 15px; }
+.preview-specs {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--txt2);
+  display: flex;
+  gap: 16px;
+}
+.preview-specs span { color: var(--accent); }
+
+/* TABELA PROGRAMAÇÃO */
+.tabela-prog {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tabela-prog th {
+  text-align: left;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: var(--txt2);
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tabela-prog td {
+  padding: 10px 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  vertical-align: middle;
+}
+.tabela-prog tr:last-child td { border-bottom: none; }
+.tabela-prog tr:hover td { background: rgba(255,255,255,0.02); }
+td.td-ordem { color: var(--txt2); font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 36px; }
+td.td-produto { font-weight: 600; }
+td.td-codigo { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--txt2); }
+td.td-num { font-family: 'JetBrains Mono', monospace; text-align: right; }
+td.td-hora { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
+td.td-actions { width: 100px; text-align: right; }
+
+.ordem-btns { display: flex; gap: 4px; }
+.btn-order {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--txt2);
+  border-radius: 5px;
+  padding: 3px 7px;
+  font-size: 13px;
+  cursor: pointer;
+  line-height: 1;
+}
+.btn-order:hover { border-color: var(--accent); color: var(--txt); }
+
+/* RESUMO */
+.resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+}
+.resumo-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+}
+.resumo-lbl {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--txt2);
+  margin-bottom: 6px;
+}
+.resumo-val {
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1;
+  font-family: 'Inter', sans-serif;
+}
+.resumo-sub {
+  font-size: 12px;
+  color: var(--txt2);
+  margin-top: 3px;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+/* TOAST */
+#toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--txt);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: 999;
+  pointer-events: none;
+}
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#toast.ok  { border-color: var(--ok); color: var(--ok); }
+#toast.err { border-color: var(--red); color: var(--red); }
+
+/* EMPTY */
+.empty-row td {
+  text-align: center;
+  color: var(--txt2);
+  font-style: italic;
+  padding: 30px;
+}
+
+/* TIMELINE */
+.timeline { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+.timeline-item {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 100px;
+}
+.timeline-item .tl-hora { font-family: 'JetBrains Mono', monospace; color: var(--accent); font-size: 11px; }
+.timeline-item .tl-nome { font-weight: 600; font-size: 12px; margin-top: 2px; }
+.timeline-item .tl-qtd  { color: var(--txt2); font-size: 11px; }
+.timeline-almoco {
+  background: rgba(113,113,122,0.12);
+  border-color: rgba(113,113,122,0.3);
+  align-self: center;
+}
+.timeline-almoco .tl-hora { color: var(--txt2); }
+.timeline-almoco .tl-nome { color: var(--txt2); font-weight: 400; font-style: italic; }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">ritmoprod<span style="color:#FF5C1F">.</span></a>
+  <div class="nav-links">
+    <a href="/operador">Operador</a>
+    <a href="/tv">TV</a>
+    <a href="/simulacoes">Simulações</a>
+    <a href="/programacao" class="active">Programação</a>
+  </div>
+</nav>
+
+<div class="container">
+  <h2>Programação do Dia</h2>
+
+  <!-- DATA -->
+  <div class="card">
+    <div class="card-title">Data</div>
+    <div class="date-row">
+      <input type="date" id="input-data">
+      <button class="btn btn-outline" onclick="carregarProgramacao()">Carregar</button>
+      <span id="status-carga" style="font-size:13px;color:var(--txt2)"></span>
+    </div>
+  </div>
+
+  <!-- ADICIONAR PRODUTO -->
+  <div class="card">
+    <div class="card-title">Adicionar produto</div>
+    <div class="search-row">
+      <div>
+        <label>Buscar por</label>
+        <select id="modo-busca">
+          <option value="codigo">Código</option>
+          <option value="ean">EAN</option>
+        </select>
+      </div>
+      <div>
+        <label>Código / EAN</label>
+        <input type="text" id="input-busca" placeholder="Digite e pressione Enter..."
+               onkeydown="if(event.key==='Enter') buscarProduto()">
+      </div>
+      <div>
+        <label>Quantidade (cx)</label>
+        <input type="number" id="input-qtd" min="1" step="1" placeholder="0"
+               onkeydown="if(event.key==='Enter') adicionarItem()">
+      </div>
+      <button class="btn btn-outline" onclick="buscarProduto()">Buscar</button>
+      <button class="btn btn-accent" onclick="adicionarItem()" id="btn-add" disabled>+ Adicionar</button>
+    </div>
+
+    <div id="produto-preview" style="margin-top:12px">
+      <div>
+        <div class="preview-nome" id="prev-nome">—</div>
+        <div style="font-size:12px;color:var(--txt2);margin-top:2px" id="prev-codigo">—</div>
+      </div>
+      <div class="preview-specs">
+        <div>VEL <span id="prev-vel">—</span></div>
+        <div>MED <span id="prev-med">—</span></div>
+        <div>CX/MIN <span id="prev-cxmin">—</span></div>
+        <div>CX/H <span id="prev-cxh">—</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABELA -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div class="card-title" style="margin-bottom:0">Programação</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-outline btn-sm" onclick="limparTudo()">Limpar tudo</button>
+        <button class="btn btn-ok" onclick="salvarProgramacao()" id="btn-salvar">Salvar no Sheets</button>
+      </div>
+    </div>
+    <table class="tabela-prog">
+      <thead>
+        <tr>
+          <th style="width:36px">#</th>
+          <th>Produto</th>
+          <th>Código</th>
+          <th style="text-align:right">Qtd (cx)</th>
+          <th style="text-align:right">CX/H</th>
+          <th style="text-align:right">Tempo</th>
+          <th>Início</th>
+          <th>Fim</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tbody-prog">
+        <tr class="empty-row"><td colspan="9">Nenhum produto adicionado.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- RESUMO -->
+  <div class="card" id="card-resumo" style="display:none">
+    <div class="card-title">Resumo do dia</div>
+    <div class="resumo-grid">
+      <div class="resumo-item">
+        <div class="resumo-lbl">Total de produtos</div>
+        <div class="resumo-val" id="res-qtd-itens">—</div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-lbl">Total de caixas</div>
+        <div class="resumo-val" id="res-total-cx">—</div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-lbl">Tempo total</div>
+        <div class="resumo-val" id="res-tempo">—</div>
+        <div class="resumo-sub" id="res-tempo-min"></div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-lbl">Início</div>
+        <div class="resumo-val" id="res-inicio" style="color:var(--txt2)">07:00</div>
+      </div>
+      <div class="resumo-item">
+        <div class="resumo-lbl">Previsão de término</div>
+        <div class="resumo-val" id="res-fim" style="color:var(--accent)">—</div>
+        <div class="resumo-sub" id="res-obs"></div>
+      </div>
+    </div>
+
+    <!-- TIMELINE -->
+    <div class="card-title" style="margin-top:20px;margin-bottom:0">Timeline</div>
+    <div class="timeline" id="timeline"></div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════════════════════════════
+const DEFAULT_APPS_URL = "https://script.google.com/macros/s/AKfycby3fhsaj-nfejzJLhCErjhpDERvr24-nokG-Cq_qwxnXXzIbwF8iFhvkfZm2Y6D168b/exec";
+function getAppsScriptURL() {
+  return localStorage.getItem('esteira_apps_url') || DEFAULT_APPS_URL;
+}
+
+const TURNO_INICIO = "07:00";
+const ALMOCO_INI   = "11:00";
+const ALMOCO_FIM   = "12:12";
+const TURNO_FIM    = "16:45";
+
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+let itens      = [];   // { codigo, descricao, qtd_cx, vel, medida, entre_pecas, cx_min, cx_h, tempo_min, hora_inicio, hora_fim }
+let produtoAtual = null;
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function parseHHMM(str) {
+  const p = (str || "").split(':');
+  return parseInt(p[0]||0)*60 + parseInt(p[1]||0);
+}
+
+function minToHHMM(min) {
+  const h = Math.floor(min / 60);
+  const m = Math.floor(min % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+}
+
+function fmtTempoHM(min) {
+  const h = Math.floor(min / 60);
+  const m = Math.round(min % 60);
+  if (h === 0) return `${m}min`;
+  return `${h}h${m > 0 ? String(m).padStart(2,'0') : ''}`;
+}
+
+function calcCxMin(vel, medida, ep) {
+  if (!vel || !medida) return 0;
+  return (vel * 1000) / (medida + (ep || 0));
+}
+
+function hojeISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+
+function isoToBR(iso) {
+  const p = iso.split('-');
+  return `${p[2]}/${p[1]}/${p[0]}`;
+}
+
+// Adiciona minutos a um horário HH:MM, pulando o almoço
+function addMinutosComAlmoco(startMin, durMin) {
+  const almIni = parseHHMM(ALMOCO_INI);
+  const almFim = parseHHMM(ALMOCO_FIM);
+  let cur = startMin;
+  let restante = durMin;
+
+  while (restante > 0) {
+    if (cur < almIni) {
+      const ateAlmoco = almIni - cur;
+      if (restante <= ateAlmoco) {
+        cur += restante;
+        restante = 0;
+      } else {
+        restante -= ateAlmoco;
+        cur = almFim; // pula almoço
+      }
+    } else if (cur >= almIni && cur < almFim) {
+      cur = almFim; // já no almoço, avança para o fim
+    } else {
+      cur += restante;
+      restante = 0;
+    }
+  }
+  return cur;
+}
+
+// Recalcula hora_inicio e hora_fim de todos os itens
+function recalcularHorarios() {
+  let curMin = parseHHMM(TURNO_INICIO);
+  const almIni = parseHHMM(ALMOCO_INI);
+  const almFim = parseHHMM(ALMOCO_FIM);
+
+  itens.forEach(item => {
+    // Se o horário atual cair no almoço, avança
+    if (curMin >= almIni && curMin < almFim) curMin = almFim;
+    item.hora_inicio = minToHHMM(curMin);
+    const fimMin = addMinutosComAlmoco(curMin, item.tempo_min);
+    item.hora_fim = minToHHMM(fimMin);
+    curMin = fimMin;
+    if (curMin >= almIni && curMin < almFim) curMin = almFim;
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// API
+// ═══════════════════════════════════════════════════════════════
+async function apiFetch(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 12000);
+  try {
+    const res  = await fetch(url, { redirect: 'follow', signal: controller.signal });
+    clearTimeout(timer);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    return json.data;
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
+async function apiPost(acao, body) {
+  const url = `${getAppsScriptURL()}?acao=${acao}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 15000);
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      redirect: 'follow',
+      signal: controller.signal,
+      body: JSON.stringify(body)
+    });
+    clearTimeout(timer);
+    const json = await res.json();
+    if (!json.ok) throw new Error(json.error);
+    return json.data;
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BUSCA PRODUTO
+// ═══════════════════════════════════════════════════════════════
+async function buscarProduto() {
+  const modo  = document.getElementById('modo-busca').value;
+  const valor = document.getElementById('input-busca').value.trim();
+  if (!valor) return toast('Digite um código para buscar.', 'err');
+
+  const acao = modo === 'ean' ? 'buscarEAN' : 'buscarCodigo';
+  const param = modo === 'ean' ? 'ean' : 'codigo';
+
+  try {
+    const data = await apiFetch(`${getAppsScriptURL()}?acao=${acao}&${param}=${encodeURIComponent(valor)}`);
+    if (!data) {
+      toast('Produto não encontrado.', 'err');
+      ocultarPreview();
+      return;
+    }
+    produtoAtual = data;
+    mostrarPreview(data);
+    document.getElementById('btn-add').disabled = false;
+    document.getElementById('input-qtd').focus();
+  } catch (e) {
+    toast('Erro ao buscar: ' + e.message, 'err');
+  }
+}
+
+function mostrarPreview(p) {
+  const cxMin = calcCxMin(p.vel, p.medida, p.entre_pecas);
+  document.getElementById('prev-nome').textContent   = p.descricao || p.codigo;
+  document.getElementById('prev-codigo').textContent = p.codigo;
+  document.getElementById('prev-vel').textContent    = p.vel    ? p.vel.toFixed(1)+' m/min' : '—';
+  document.getElementById('prev-med').textContent    = p.medida ? p.medida+' mm' : '—';
+  document.getElementById('prev-cxmin').textContent  = cxMin ? cxMin.toFixed(2) : '—';
+  document.getElementById('prev-cxh').textContent    = cxMin ? Math.round(cxMin*60) : '—';
+  document.getElementById('produto-preview').classList.add('visible');
+}
+
+function ocultarPreview() {
+  produtoAtual = null;
+  document.getElementById('produto-preview').classList.remove('visible');
+  document.getElementById('btn-add').disabled = true;
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ADICIONAR / REMOVER ITENS
+// ═══════════════════════════════════════════════════════════════
+function adicionarItem() {
+  if (!produtoAtual) return toast('Busque um produto primeiro.', 'err');
+  const qtd = parseInt(document.getElementById('input-qtd').value);
+  if (!qtd || qtd <= 0) return toast('Informe a quantidade em caixas.', 'err');
+
+  const p   = produtoAtual;
+  const cxMin = calcCxMin(p.vel, p.medida, p.entre_pecas);
+  const cxH   = cxMin * 60;
+  const tempMin = cxMin > 0 ? (qtd / cxMin) : 0;
+
+  itens.push({
+    codigo:      p.codigo,
+    descricao:   p.descricao || p.codigo,
+    qtd_cx:      qtd,
+    vel:         p.vel || 0,
+    medida:      p.medida || 0,
+    entre_pecas: p.entre_pecas || 0,
+    cx_min:      parseFloat(cxMin.toFixed(4)),
+    cx_h:        Math.round(cxH),
+    tempo_min:   parseFloat(tempMin.toFixed(1)),
+    hora_inicio: '',
+    hora_fim:    ''
+  });
+
+  recalcularHorarios();
+  renderTabela();
+  renderResumo();
+
+  // Limpar inputs
+  document.getElementById('input-busca').value = '';
+  document.getElementById('input-qtd').value   = '';
+  ocultarPreview();
+  document.getElementById('input-busca').focus();
+  toast(`${p.descricao || p.codigo} adicionado.`, 'ok');
+}
+
+function removerItem(idx) {
+  itens.splice(idx, 1);
+  recalcularHorarios();
+  renderTabela();
+  renderResumo();
+}
+
+function moverItem(idx, dir) {
+  const novoIdx = idx + dir;
+  if (novoIdx < 0 || novoIdx >= itens.length) return;
+  const tmp = itens[idx];
+  itens[idx] = itens[novoIdx];
+  itens[novoIdx] = tmp;
+  recalcularHorarios();
+  renderTabela();
+  renderResumo();
+}
+
+function limparTudo() {
+  if (itens.length === 0) return;
+  if (!confirm('Limpar toda a programação?')) return;
+  itens = [];
+  renderTabela();
+  renderResumo();
+}
+
+// ═══════════════════════════════════════════════════════════════
+// RENDER
+// ═══════════════════════════════════════════════════════════════
+function renderTabela() {
+  const tbody = document.getElementById('tbody-prog');
+  tbody.innerHTML = '';
+
+  if (itens.length === 0) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="9">Nenhum produto adicionado.</td></tr>';
+    return;
+  }
+
+  itens.forEach((item, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-ordem">${idx+1}</td>
+      <td class="td-produto">${item.descricao}</td>
+      <td class="td-codigo">${item.codigo}</td>
+      <td class="td-num">${item.qtd_cx.toLocaleString('pt-BR')}</td>
+      <td class="td-num">${item.cx_h}</td>
+      <td class="td-num">${fmtTempoHM(item.tempo_min)}</td>
+      <td class="td-hora">${item.hora_inicio}</td>
+      <td class="td-hora">${item.hora_fim}</td>
+      <td class="td-actions">
+        <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center">
+          <div class="ordem-btns">
+            <button class="btn-order" title="Subir" onclick="moverItem(${idx},-1)">↑</button>
+            <button class="btn-order" title="Descer" onclick="moverItem(${idx},1)">↓</button>
+          </div>
+          <button class="btn btn-red" onclick="removerItem(${idx})">✕</button>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function renderResumo() {
+  const card = document.getElementById('card-resumo');
+  if (itens.length === 0) { card.style.display = 'none'; return; }
+  card.style.display = 'block';
+
+  const totalCx  = itens.reduce((s,i) => s+i.qtd_cx, 0);
+  const totalMin = itens.reduce((s,i) => s+i.tempo_min, 0);
+  const fimReal  = itens.length > 0 ? itens[itens.length-1].hora_fim : '—';
+  const fimMin   = parseHHMM(fimReal);
+  const turnoFim = parseHHMM(TURNO_FIM);
+
+  document.getElementById('res-qtd-itens').textContent = itens.length;
+  document.getElementById('res-total-cx').textContent  = totalCx.toLocaleString('pt-BR');
+  document.getElementById('res-tempo').textContent     = fmtTempoHM(totalMin);
+  document.getElementById('res-tempo-min').textContent = `${Math.round(totalMin)} minutos`;
+  document.getElementById('res-inicio').textContent    = TURNO_INICIO;
+  document.getElementById('res-fim').textContent       = fimReal;
+
+  const obs = document.getElementById('res-obs');
+  if (fimMin > turnoFim) {
+    const extra = fimMin - turnoFim;
+    obs.textContent = `⚠ ${fmtTempoHM(extra)} além do turno`;
+    obs.style.color = 'var(--warn)';
+    document.getElementById('res-fim').style.color = 'var(--warn)';
+  } else {
+    const folga = turnoFim - fimMin;
+    obs.textContent = `✓ ${fmtTempoHM(folga)} de folga no turno`;
+    obs.style.color = 'var(--ok)';
+    document.getElementById('res-fim').style.color = 'var(--accent)';
+  }
+
+  renderTimeline();
+}
+
+function renderTimeline() {
+  const tl = document.getElementById('timeline');
+  tl.innerHTML = '';
+
+  itens.forEach((item, idx) => {
+    // Verificar se há almoço entre este item e o anterior
+    if (idx > 0) {
+      const prevFim = parseHHMM(itens[idx-1].hora_fim);
+      const curIni  = parseHHMM(item.hora_inicio);
+      if (prevFim <= parseHHMM(ALMOCO_INI) && curIni >= parseHHMM(ALMOCO_FIM)) {
+        const almEl = document.createElement('div');
+        almEl.className = 'timeline-item timeline-almoco';
+        almEl.innerHTML = `
+          <div class="tl-hora">${ALMOCO_INI}–${ALMOCO_FIM}</div>
+          <div class="tl-nome">Almoço</div>
+          <div class="tl-qtd">72 min</div>
+        `;
+        tl.appendChild(almEl);
+      }
+    }
+
+    const el = document.createElement('div');
+    el.className = 'timeline-item';
+    el.innerHTML = `
+      <div class="tl-hora">${item.hora_inicio}–${item.hora_fim}</div>
+      <div class="tl-nome">${item.descricao}</div>
+      <div class="tl-qtd">${item.qtd_cx} cx · ${fmtTempoHM(item.tempo_min)}</div>
+    `;
+    tl.appendChild(el);
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SALVAR / CARREGAR
+// ═══════════════════════════════════════════════════════════════
+async function salvarProgramacao() {
+  if (itens.length === 0) return toast('Adicione pelo menos um produto.', 'err');
+  const dataISO = document.getElementById('input-data').value;
+  if (!dataISO) return toast('Selecione a data.', 'err');
+
+  const btn = document.getElementById('btn-salvar');
+  btn.textContent = 'Salvando...';
+  btn.disabled = true;
+
+  try {
+    await apiPost('salvarProgramacao', {
+      data: isoToBR(dataISO),
+      itens: itens
+    });
+    toast('Programação salva no Google Sheets!', 'ok');
+  } catch (e) {
+    toast('Erro ao salvar: ' + e.message, 'err');
+  } finally {
+    btn.textContent = 'Salvar no Sheets';
+    btn.disabled = false;
+  }
+}
+
+async function carregarProgramacao() {
+  const dataISO = document.getElementById('input-data').value;
+  if (!dataISO) return toast('Selecione a data.', 'err');
+
+  const status = document.getElementById('status-carga');
+  status.textContent = 'Carregando...';
+
+  try {
+    const data = await apiFetch(
+      `${getAppsScriptURL()}?acao=getProgramacao&data=${encodeURIComponent(isoToBR(dataISO))}`
+    );
+
+    if (!data || data.length === 0) {
+      status.textContent = 'Nenhuma programação salva para esta data.';
+      return;
+    }
+
+    itens = data.map(item => ({
+      codigo:      item.codigo,
+      descricao:   item.descricao,
+      qtd_cx:      item.qtd_cx,
+      vel:         item.vel,
+      medida:      item.medida,
+      entre_pecas: item.entre_pecas,
+      cx_min:      item.cx_min,
+      cx_h:        Math.round(item.cx_min * 60),
+      tempo_min:   item.tempo_min,
+      hora_inicio: item.hora_inicio,
+      hora_fim:    item.hora_fim
+    }));
+
+    recalcularHorarios();
+    renderTabela();
+    renderResumo();
+    status.textContent = `${itens.length} produto(s) carregado(s).`;
+    toast('Programação carregada!', 'ok');
+  } catch (e) {
+    status.textContent = '';
+    toast('Erro ao carregar: ' + e.message, 'err');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════════════
+let toastTimer;
+function toast(msg, type = '') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'show ' + (type || '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ''; }, 3000);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+document.getElementById('input-data').value = hojeISO();
+</script>
+</body>
+</html>

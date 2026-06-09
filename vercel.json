@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "buildCommand": "vite build && cp esteira_operador.html dist/ && cp esteira_tv.html dist/",
+  "buildCommand": "vite build && cp esteira_operador.html dist/ && cp esteira_tv.html dist/ && cp simulacoes.html dist/ && cp programacao.html dist/",
   "outputDirectory": "dist",
   "builds": [
     {
@@ -12,8 +12,10 @@
     }
   ],
   "routes": [
-    { "src": "/operador", "dest": "/esteira_operador.html" },
-    { "src": "/tv",       "dest": "/esteira_tv.html"      },
-    { "src": "/(.*)",     "dest": "/$1"                   }
+    { "src": "/operador",     "dest": "/esteira_operador.html" },
+    { "src": "/tv",           "dest": "/esteira_tv.html"      },
+    { "src": "/simulacoes",   "dest": "/simulacoes.html"      },
+    { "src": "/programacao",  "dest": "/programacao.html"     },
+    { "src": "/(.*)",         "dest": "/$1"                   }
   ]
 }
