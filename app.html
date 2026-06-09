@@ -400,7 +400,7 @@ input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
 .tabela-prog tr:last-child td { border-bottom: none; }
 .tabela-prog tr:hover td { background: rgba(255,255,255,0.02); }
 td.td-ordem { color: var(--txt2); font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 36px; }
-td.td-produto { font-weight: 600; }
+td.td-produto { font-weight: 600; white-space: nowrap; }
 td.td-codigo { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--txt2); }
 td.td-num { font-family: 'JetBrains Mono', monospace; text-align: right; white-space: nowrap; }
 td.td-hora { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
@@ -1932,7 +1932,9 @@ async function progCarregarProgramacao(){
       const cxMin=(vel>0&&(med+ep)>0)?calcCxMinRaw(vel,med,ep)*(1-progGetFadiga()):0;
       const cxH=Math.round(cxMin*60),tmpMin=cxMin>0?parseFloat((item.qtd_cx/cxMin).toFixed(1)):0;
       const prod=progCacheProdutos.find(p=>p.codigo===item.codigo);
-      return{codigo:item.codigo,descricao:item.descricao,qtd_cx:item.qtd_cx,vel,medida:med,entre_pecas:ep,cx_min:parseFloat(cxMin.toFixed(4)),cx_h:cxH,tempo_min:tmpMin,hora_inicio:'',hora_fim:'',pb:prod?(parseFloat(prod.pb)||0):0,pontos:prod?(parseFloat(prod.pontos)||0):0};
+      const pb=parseFloat(item.pb)||(prod?parseFloat(prod.pb)||0:0);
+      const pontos=parseFloat(item.pontos)||(prod?parseFloat(prod.pontos)||0:0);
+      return{codigo:item.codigo,descricao:item.descricao,qtd_cx:item.qtd_cx,vel,medida:med,entre_pecas:ep,cx_min:parseFloat(cxMin.toFixed(4)),cx_h:cxH,tempo_min:tmpMin,hora_inicio:'',hora_fim:'',pb,pontos};
     });
     progRecalcularHorarios();progRenderTabela();progRenderResumo();
     status.textContent=`${progItens.length} produto(s) carregado(s).`;

@@ -348,24 +348,25 @@ function getProgramacao(data) {
       cx_min:       parseFloat(r[8])  || 0,
       tempo_min:    parseFloat(r[9])  || 0,
       hora_inicio:  String(r[10] || "").trim(),
-      hora_fim:     String(r[11] || "").trim()
+      hora_fim:     String(r[11] || "").trim(),
+      pb:           0,
+      pontos:       0
     });
   }
 
-  // Se vel ou medida estiverem zerados, enriquece com dados do cadastro de produtos
-  var produtos = null;
+  // Enriquece com dados do cadastro de produtos (vel, medida, pb, pontos)
+  var produtos = getProdutos();
   for (var j = 0; j < result.length; j++) {
     var item = result[j];
-    if (item.vel === 0 || item.medida === 0) {
-      if (!produtos) produtos = getProdutos();
-      for (var k = 0; k < produtos.length; k++) {
-        if (produtos[k].codigo === item.codigo) {
-          if (item.vel    === 0) item.vel    = produtos[k].vel;
-          if (item.medida === 0) item.medida = produtos[k].medida;
-          if (item.entre_pecas === 0) item.entre_pecas = produtos[k].entre_pecas;
-          if (!item.descricao)   item.descricao = produtos[k].descricao;
-          break;
-        }
+    for (var k = 0; k < produtos.length; k++) {
+      if (produtos[k].codigo === item.codigo) {
+        if (item.vel         === 0) item.vel         = produtos[k].vel;
+        if (item.medida      === 0) item.medida      = produtos[k].medida;
+        if (item.entre_pecas === 0) item.entre_pecas = produtos[k].entre_pecas;
+        if (!item.descricao)        item.descricao   = produtos[k].descricao;
+        item.pb     = parseFloat(produtos[k].pb)     || 0;
+        item.pontos = parseFloat(produtos[k].pontos) || 0;
+        break;
       }
     }
   }
