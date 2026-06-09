@@ -1365,6 +1365,7 @@ async function carregarConfig() {
   const fadSalvo = parseFloat(localStorage.getItem('esteira_fadiga_pct')) || 0;
   state.fatorFadiga = fadSalvo / 100;
 
+  renderTabela(); // mostra períodos imediatamente, antes da API responder
   atualizarConnDot();
   await carregarConfig();
   await carregarRegistros();
