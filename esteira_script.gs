@@ -7,6 +7,7 @@ var ABA_PRODUTO  = "PRODUTO_CODIGO";
 var ABA_HORA     = "HORA_A_HORA";
 var ABA_PARADAS  = "PARADAS";
 var ABA_CONFIG   = "CONFIG";
+var ABA_PROG     = "PROGRAMACAO";
 
 // ── RESPONSE HELPER ──────────────────────────────────────────────────────────
 
@@ -50,6 +51,10 @@ function doGet(e) {
     if (acao === "config") {
       return ok(getConfig());
     }
+    if (acao === "getProgramacao") {
+      var data = (e.parameter.data || "").trim();
+      return ok(getProgramacao(data));
+    }
 
     return err("acao invalida: " + acao);
   } catch (ex) {
@@ -78,6 +83,10 @@ function doPost(e) {
       salvarParada(body);
       return ok(null);
     }
+    if (acao === "salvarProgramacao") {
+      salvarProgramacao(body);
+      return ok(null);
+    }
 
     return err("acao invalida: " + acao);
   } catch (ex) {
@@ -86,6 +95,7 @@ function doPost(e) {
 }
 
 // ── PRODUTO_CODIGO ────────────────────────────────────────────────────────────
+// Colunas: A=CODIGO B=DESCRICAO C=PB D=EAN128 E=MEDIDA(mm) F=VEL(m/min) G=ENTRE_PECAS(mm)
 
 function getProdutos() {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
@@ -99,12 +109,13 @@ function getProdutos() {
     var r = rows[i];
     if (!r[0]) continue;
     result.push({
-      codigo:    String(r[0] || "").trim(),
-      descricao: String(r[1] || "").trim(),
-      pb:        String(r[2] || "").trim(),
-      ean128:    String(r[3] || "").trim(),
-      medida:    parseFloat(r[4]) || 0,
-      vel:       parseFloat(r[5]) || 0
+      codigo:      String(r[0] || "").trim(),
+      descricao:   String(r[1] || "").trim(),
+      pb:          String(r[2] || "").trim(),
+      ean128:      String(r[3] || "").trim(),
+      medida:      parseFloat(r[4]) || 0,
+      vel:         parseFloat(r[5]) || 0,
+      entre_pecas: parseFloat(r[6]) || 0
     });
   }
 
@@ -120,19 +131,23 @@ function buscarPorEAN(ean) {
   return null;
 }
 
+function normCodigo(s) {
+  return String(s || "").replace(/\./g, "").replace(/\s/g, "").toUpperCase();
+}
+
 function buscarPorCodigo(codigo) {
   if (!codigo) return null;
-  var upper = codigo.toUpperCase();
+  var norm = normCodigo(codigo);
   var produtos = getProdutos();
   for (var i = 0; i < produtos.length; i++) {
-    if (produtos[i].codigo.toUpperCase() === upper) return produtos[i];
+    if (normCodigo(produtos[i].codigo) === norm) return produtos[i];
   }
   return null;
 }
 
 // ── HORA_A_HORA ───────────────────────────────────────────────────────────────
 // Colunas: A=Data B=Linha C=Produto D=VEL E=MEDIDA F=MIN_P G=Meta H=Realizado
-//          I=Saldo J=Pct K=Acum_real L=Acum_meta M=Eficiencia N=Projecao O=Periodo
+//          I=Saldo J=Pct K=Acum_real L=Acum_meta M=Eficiencia N=Projecao O=Periodo P=EntrePecas
 
 function getRegistros(data, linha) {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
@@ -172,9 +187,10 @@ function getRegistros(data, linha) {
       pct:        parseFloat(r[9])  || 0,
       acum_real:  parseFloat(r[10]) || 0,
       acum_meta:  parseFloat(r[11]) || 0,
-      eficiencia: parseFloat(r[12]) || 0,
-      projecao:   parseFloat(r[13]) || 0,
-      periodo:    String(r[14] || "").trim()
+      eficiencia:  parseFloat(r[12]) || 0,
+      projecao:    parseFloat(r[13]) || 0,
+      periodo:     String(r[14] || "").trim(),
+      entre_pecas: parseFloat(r[15]) || 0
     });
   }
 
@@ -225,9 +241,10 @@ function salvarRegistro(body) {
     parseFloat(body.pct)       || 0,
     parseFloat(body.acum_real) || 0,
     parseFloat(body.acum_meta) || 0,
-    parseFloat(body.eficiencia)|| 0,
-    parseFloat(body.projecao)  || 0,
-    periodoStr
+    parseFloat(body.eficiencia)  || 0,
+    parseFloat(body.projecao)    || 0,
+    periodoStr,
+    parseFloat(body.entre_pecas) || 0
   ];
 
   if (targetRow > 0) {
@@ -296,6 +313,94 @@ function getConfig() {
     if (rows[i][0]) cfg[String(rows[i][0]).trim()] = rows[i][1];
   }
   return cfg;
+}
+
+// ── PROGRAMACAO ───────────────────────────────────────────────────────────────
+// Colunas: A=Data B=Ordem C=Codigo D=Descricao E=Qtd_cx F=Vel G=Medida
+//          H=Entre_pecas I=CxMin J=Tempo_min K=Hora_inicio L=Hora_fim
+
+function getProgramacao(data) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_PROG);
+  if (!sheet) return [];
+
+  var tz   = Session.getScriptTimeZone();
+  var rows = sheet.getDataRange().getValues();
+  var result = [];
+
+  for (var i = 1; i < rows.length; i++) {
+    var r = rows[i];
+    if (!r[0]) continue;
+    var rowData = "";
+    try { rowData = Utilities.formatDate(r[0], tz, "dd/MM/yyyy"); }
+    catch (ex) { rowData = String(r[0]); }
+    if (data && rowData !== data) continue;
+    result.push({
+      data:         rowData,
+      ordem:        parseInt(r[1]) || 0,
+      codigo:       String(r[2] || "").trim(),
+      descricao:    String(r[3] || "").trim(),
+      qtd_cx:       parseFloat(r[4])  || 0,
+      vel:          parseFloat(r[5])  || 0,
+      medida:       parseFloat(r[6])  || 0,
+      entre_pecas:  parseFloat(r[7])  || 0,
+      cx_min:       parseFloat(r[8])  || 0,
+      tempo_min:    parseFloat(r[9])  || 0,
+      hora_inicio:  String(r[10] || "").trim(),
+      hora_fim:     String(r[11] || "").trim()
+    });
+  }
+
+  result.sort(function(a, b) { return a.ordem - b.ordem; });
+  return result;
+}
+
+function salvarProgramacao(body) {
+  var ss    = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ABA_PROG);
+
+  if (!sheet) {
+    sheet = ss.insertSheet(ABA_PROG);
+    sheet.getRange(1, 1, 1, 12).setValues([[
+      "Data","Ordem","Codigo","Descricao","Qtd_cx","Vel","Medida",
+      "Entre_pecas","CxMin","Tempo_min","Hora_inicio","Hora_fim"
+    ]]);
+  }
+
+  var tz      = Session.getScriptTimeZone();
+  var dataStr = String(body.data || "").trim();
+  var itens   = body.itens || [];
+
+  // Remove todas as linhas do dia
+  var rows = sheet.getDataRange().getValues();
+  var toDelete = [];
+  for (var i = rows.length - 1; i >= 1; i--) {
+    if (!rows[i][0]) continue;
+    var rowData = "";
+    try { rowData = Utilities.formatDate(rows[i][0], tz, "dd/MM/yyyy"); }
+    catch (ex) { rowData = String(rows[i][0]); }
+    if (rowData === dataStr) toDelete.push(i + 1);
+  }
+  toDelete.forEach(function(row) { sheet.deleteRow(row); });
+
+  // Insere novos itens
+  var dateObj = parseDataBR(dataStr);
+  itens.forEach(function(item, idx) {
+    sheet.appendRow([
+      dateObj,
+      idx + 1,
+      item.codigo      || "",
+      item.descricao   || "",
+      parseFloat(item.qtd_cx)     || 0,
+      parseFloat(item.vel)        || 0,
+      parseFloat(item.medida)     || 0,
+      parseFloat(item.entre_pecas)|| 0,
+      parseFloat(item.cx_min)     || 0,
+      parseFloat(item.tempo_min)  || 0,
+      item.hora_inicio || "",
+      item.hora_fim    || ""
+    ]);
+  });
 }
 
 // ── DATE HELPER ───────────────────────────────────────────────────────────────
