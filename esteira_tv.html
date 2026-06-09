@@ -112,7 +112,7 @@ html, body {
 .spec-chip span:last-child  { color: var(--accent); }
 .efic-header-bloco { text-align: center; grid-row: 1 / 3; }
 .efic-header-pct {
-  font-size: clamp(32px, 4.5vw, 64px);
+  font-size: clamp(26px, 4.5vh, 56px);
   font-weight: 700;
   line-height: 1;
 }
@@ -158,25 +158,25 @@ table.tabela thead th {
   text-align: center;
 }
 table.tabela td {
-  padding: clamp(6px, 1vh, 14px) 10px;
+  padding: clamp(3px, 0.9vh, 12px) 10px;
   text-align: center;
   border-bottom: 1px solid var(--border);
   font-family: 'JetBrains Mono', monospace;
-  font-size: clamp(16px, 2.2vw, 32px);
+  font-size: clamp(12px, 2.4vh, 28px);
   vertical-align: middle;
 }
 td.periodo-td {
   text-align: left;
   padding-left: 16px;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(13px, 1.5vw, 22px);
+  font-size: clamp(12px, 2vh, 20px);
 }
 .periodo-td .pid   { font-weight: 700; color: var(--txt); }
 .periodo-td .prange { font-size: 0.72em; color: var(--txt2); display: block; }
 td.produto-td {
   text-align: left;
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(11px, 1.2vw, 17px);
+  font-size: clamp(10px, 1.7vh, 16px);
   color: var(--txt2);
   white-space: nowrap;
   overflow: hidden;
@@ -185,7 +185,7 @@ td.produto-td {
 }
 .status-badge {
   font-family: 'Inter', system-ui, sans-serif;
-  font-size: clamp(12px, 1.4vw, 20px);
+  font-size: clamp(11px, 1.9vh, 18px);
   font-weight: 700;
   letter-spacing: 0.5px;
 }
@@ -226,7 +226,7 @@ tr.periodo-ativo td.periodo-td .pid { color: var(--accent); }
   margin-bottom: 2px;
 }
 .kpi-meta-val {
-  font-size: clamp(28px, 3.5vw, 52px);
+  font-size: clamp(22px, 3.5vh, 48px);
   font-weight: 700;
   line-height: 1;
   color: var(--txt2);
@@ -240,7 +240,7 @@ tr.periodo-ativo td.periodo-td .pid { color: var(--accent); }
   padding-top: 4px;
 }
 .kpi-acum-val {
-  font-size: clamp(52px, 7vw, 110px);
+  font-size: clamp(38px, 6vh, 88px);
   font-weight: 900;
   line-height: 0.9;
   letter-spacing: -0.04em;
@@ -265,7 +265,7 @@ tr.periodo-ativo td.periodo-td .pid { color: var(--accent); }
 .efic-badge.red  { background: rgba(220,38,38,0.2);   color: var(--red); }
 .efic-badge.idle { background: rgba(113,113,122,0.15); color: var(--txt2); }
 .efic-pct-val {
-  font-size: clamp(24px, 3vw, 44px);
+  font-size: clamp(20px, 3.2vh, 40px);
   font-weight: 700;
   line-height: 1;
 }
@@ -303,7 +303,7 @@ tr.periodo-ativo td.periodo-td .pid { color: var(--accent); }
   border: 1px solid var(--border);
 }
 .ritmo-item .r-val {
-  font-size: clamp(16px, 2vw, 30px);
+  font-size: clamp(14px, 2.4vh, 28px);
   font-weight: 700;
   line-height: 1;
 }
@@ -614,6 +614,7 @@ async function fetchAndRender() {
   }
 
   renderTabela();
+  autoFit();
   state.lastUpdate = new Date();
   document.getElementById('last-update').textContent =
     'Atualizado: ' + state.lastUpdate.toLocaleTimeString('pt-BR');
@@ -823,6 +824,24 @@ setTimeout(() => {
 }, 5000);
 
 // ═══════════════════════════════════════════════════════════════
+// AUTO FIT — escala o conteúdo para caber na tela sem scroll
+// ═══════════════════════════════════════════════════════════════
+function autoFit() {
+  const main   = document.getElementById('main');
+  const topBar = document.getElementById('top-bar');
+  const footer = document.getElementById('global-footer');
+  main.style.zoom = '';
+  requestAnimationFrame(() => {
+    const avail  = window.innerHeight - topBar.offsetHeight - footer.offsetHeight;
+    const needed = main.scrollHeight;
+    if (needed > avail + 2) {
+      main.style.zoom = (avail / needed).toFixed(4);
+    }
+  });
+}
+window.addEventListener('resize', autoFit);
+
+// ═══════════════════════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════════════════════
 (function init() {
@@ -830,6 +849,7 @@ setTimeout(() => {
   setInterval(fetchAndRender, REFRESH_INTERVAL);
   setInterval(updateClock, 1000);
   updateClock();
+  setTimeout(autoFit, 300);
 })();
 </script>
 </body>
