@@ -28,6 +28,29 @@ html, body {
   min-height: 100vh;
 }
 
+@media print {
+  * { color: #000 !important; background: #fff !important; border-color: #ccc !important; }
+  nav, #card-busca, #card-data .btn, #btn-salvar, button { display: none !important; }
+  .card { border: 1px solid #ccc; border-radius: 0; margin-bottom: 12px; page-break-inside: avoid; }
+  .card-title { font-size: 13px; font-weight: 700; border-bottom: 1px solid #ccc; padding-bottom: 6px; margin-bottom: 8px; }
+  .tabela-prog th, .tabela-prog td { font-size: 11px; padding: 5px 8px; border-bottom: 1px solid #ddd; }
+  .tabela-prog th { background: #f0f0f0 !important; font-weight: 700; }
+  .btn-order, .btn-del { display: none !important; }
+  .resumo-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+  .resumo-item { border: 1px solid #ccc; padding: 8px 12px; min-width: 120px; }
+  .resumo-val { font-size: 18px; }
+  #card-resumo { display: block !important; }
+  .timeline-wrap { display: none; }
+  body::before {
+    content: 'ritmoprod. — Programação do Dia';
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    color: #000 !important;
+  }
+}
+
 /* NAV */
 nav {
   background: var(--surface);
@@ -371,6 +394,7 @@ td.td-actions { width: 100px; text-align: right; }
       <div class="card-title" style="margin-bottom:0">Programação</div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-outline btn-sm" onclick="limparTudo()">Limpar tudo</button>
+        <button class="btn btn-outline btn-sm" onclick="window.print()" style="border-color:var(--txt2);color:var(--txt2)">🖨 Imprimir</button>
         <button class="btn btn-ok" onclick="salvarProgramacao()" id="btn-salvar">Salvar no Sheets</button>
       </div>
     </div>
