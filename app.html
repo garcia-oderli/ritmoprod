@@ -394,14 +394,13 @@ input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
 .preview-nome { font-weight: 600; font-size: 15px; }
 .preview-specs { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--txt2); display: flex; gap: 16px; }
 .preview-specs span { color: var(--accent); }
-.tabela-prog-wrap { overflow-x: auto; }
-.tabela-prog { width: 100%; border-collapse: collapse; min-width: 700px; }
+.tabela-prog { width: 100%; border-collapse: collapse; }
 .tabela-prog th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.7px; color: var(--txt2); padding: 8px 8px; border-bottom: 1px solid var(--border); white-space: nowrap; }
 .tabela-prog td { padding: 8px 8px; border-bottom: 1px solid var(--border); font-size: 13px; vertical-align: middle; }
 .tabela-prog tr:last-child td { border-bottom: none; }
 .tabela-prog tr:hover td { background: rgba(255,255,255,0.02); }
 td.td-ordem { color: var(--txt2); font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 36px; }
-td.td-produto { font-weight: 600; white-space: nowrap; width: 400px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+td.td-produto { font-weight: 600; white-space: nowrap; text-align: left; }
 td.td-codigo { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--txt2); }
 td.td-num { font-family: 'JetBrains Mono', monospace; text-align: right; white-space: nowrap; }
 td.td-hora { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
@@ -516,7 +515,7 @@ td.td-actions { width: 100px; text-align: right; }
   .tabela-prog td { font-size: 11px !important; padding: 6px 8px !important; border-bottom: 1px solid #e0e0e0 !important; color: #000 !important; text-align: left !important; }
   .tabela-prog tr:last-child td { border-bottom: 2px solid #333 !important; }
   td.td-num { text-align: right !important; }
-  td.td-produto { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; width: auto !important; max-width: none !important; text-align: left !important; }
+  td.td-produto { white-space: normal !important; text-align: left !important; }
   #prog-card-resumo { display: block !important; page-break-inside: avoid; }
   .resumo-grid { display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 6px !important; }
   .resumo-item { border: 1px solid #ccc !important; border-radius: 3px !important; padding: 6px 8px !important; background: #f8f8f8 !important; }
@@ -860,7 +859,6 @@ td.td-actions { width: 100px; text-align: right; }
           <button class="btn btn-ok" onclick="progSalvarProgramacao()" id="prog-btn-salvar">Salvar no Sheets</button>
         </div>
       </div>
-      <div class="tabela-prog-wrap">
       <table class="tabela-prog">
         <thead>
           <tr>
@@ -881,7 +879,6 @@ td.td-actions { width: 100px; text-align: right; }
           <tr class="empty-row"><td colspan="11">Nenhum produto adicionado.</td></tr>
         </tbody>
       </table>
-      </div>
     </div>
 
     <div class="card" id="prog-card-resumo" style="display:none">
