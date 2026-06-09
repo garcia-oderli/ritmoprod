@@ -391,7 +391,10 @@ td.td-actions { width: 100px; text-align: right; }
   <!-- TABELA -->
   <div class="card">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
-      <div class="card-title" style="margin-bottom:0">Programação</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="card-title" style="margin-bottom:0">Programação</div>
+        <span id="badge-fadiga" style="display:none;font-size:11px;background:rgba(255,152,0,0.15);color:#EAB308;border:1px solid rgba(255,152,0,0.3);border-radius:4px;padding:2px 8px;font-family:'JetBrains Mono',monospace"></span>
+      </div>
       <div style="display:flex;gap:8px">
         <button class="btn btn-outline btn-sm" onclick="limparTudo()">Limpar tudo</button>
         <button class="btn btn-outline btn-sm" onclick="window.print()" style="border-color:var(--txt2);color:var(--txt2)">🖨 Imprimir</button>
@@ -495,9 +498,14 @@ function fmtTempoHM(min) {
   return `${h}h${m > 0 ? String(m).padStart(2,'0') : ''}`;
 }
 
+function getFadiga() {
+  return (parseFloat(localStorage.getItem('esteira_fadiga_pct')) || 0) / 100;
+}
+
 function calcCxMin(vel, medida, ep) {
   if (!vel || !medida) return 0;
-  return (vel * 1000) / (medida + (ep || 0));
+  const teorico = (vel * 1000) / (medida + (ep || 0));
+  return teorico * (1 - getFadiga());
 }
 
 function hojeISO() {
@@ -706,6 +714,15 @@ function limparTudo() {
 // RENDER
 // ═══════════════════════════════════════════════════════════════
 function renderTabela() {
+  const badge = document.getElementById('badge-fadiga');
+  const fadPct = parseFloat(localStorage.getItem('esteira_fadiga_pct')) || 0;
+  if (fadPct > 0) {
+    badge.textContent = `fadiga ${fadPct}%`;
+    badge.style.display = 'inline';
+  } else {
+    badge.style.display = 'none';
+  }
+
   const tbody = document.getElementById('tbody-prog');
   tbody.innerHTML = '';
 
@@ -852,7 +869,7 @@ async function carregarProgramacao() {
       const vel  = item.vel || 0;
       const med  = item.medida || 0;
       const ep   = item.entre_pecas || 0;
-      const cxMin = (vel > 0 && (med + ep) > 0) ? (vel * 1000) / (med + ep) : 0;
+      const cxMin = (vel > 0 && (med + ep) > 0) ? ((vel * 1000) / (med + ep)) * (1 - getFadiga()) : 0;
       const cxH   = Math.round(cxMin * 60);
       const tmpMin = cxMin > 0 ? parseFloat((item.qtd_cx / cxMin).toFixed(1)) : 0;
       return {
