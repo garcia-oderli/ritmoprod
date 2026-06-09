@@ -1,5 +1,6 @@
 {
   "routes": [
+    { "src": "/app",          "dest": "/app.html"              },
     { "src": "/operador",    "dest": "/esteira_operador.html" },
     { "src": "/tv",          "dest": "/esteira_tv.html"       },
     { "src": "/simulacoes",  "dest": "/simulacoes.html"       },
