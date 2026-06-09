@@ -522,6 +522,10 @@ tr.periodo-futuro input.realizado-input { opacity: 0.4; }
     <span class="val" id="tot-projecao" style="color:var(--accent)">—</span>
     <span class="lbl">Projeção</span>
   </div>
+  <div class="total-item">
+    <span class="val" id="tot-kg" style="color:var(--ok)">—</span>
+    <span class="lbl">Total kg</span>
+  </div>
 </div>
 
 <!-- MODAL TROCA DE PRODUTO -->
@@ -1151,6 +1155,13 @@ function atualizarTotais() {
   document.getElementById('tot-eficiencia').textContent = fmtNum(efic,0)+'%';
   document.getElementById('tot-eficiencia').style.color = efCor;
   document.getElementById('tot-projecao').textContent   = fmtNum(projecao,0);
+  const pb = parseFloat(state.produto?.pb || 0);
+  const kgEl = document.getElementById('tot-kg');
+  if (pb > 0 && realAcum > 0) {
+    kgEl.textContent = fmtNum(realAcum * pb, 0) + ' kg';
+  } else {
+    kgEl.textContent = '—';
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════

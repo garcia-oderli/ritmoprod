@@ -427,6 +427,7 @@ tr.periodo-ativo td.periodo-td .pid { color: var(--accent); }
       <div>
         <div class="kpi-lbl">Produção acumulada</div>
         <div class="kpi-acum-val" id="kpi-acum" style="color:var(--txt2)">—</div>
+        <div id="kpi-kg" style="font-size:clamp(14px,1.4vw,22px);color:var(--ok);font-weight:600;margin-top:2px">—</div>
       </div>
 
       <div>
@@ -499,7 +500,7 @@ const PERIODOS = [
 // ═══════════════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════════════
-let state = { registros: [], lastUpdate: null };
+let state = { registros: [], lastUpdate: null, produtos: [] };
 
 // ═══════════════════════════════════════════════════════════════
 // UTILS
@@ -599,6 +600,10 @@ async function fetchAndRender() {
   ind.classList.add('ativo');
 
   const hoje = hojeStr();
+  if (state.produtos.length === 0) {
+    const prods = await apiFetch(`${getAppsScriptURL()}?acao=produtos`);
+    if (prods) state.produtos = prods;
+  }
   const data = await apiFetch(`${getAppsScriptURL()}?acao=registros&data=${encodeURIComponent(hoje)}&linha=L1`);
 
   if (data) {
@@ -719,6 +724,15 @@ function renderTabela() {
   const acumEl = document.getElementById('kpi-acum');
   acumEl.textContent = acumReal > 0 ? fmtNum(acumReal,0) : '—';
   acumEl.style.color = efCor;
+
+  const kgEl = document.getElementById('kpi-kg');
+  if (acumReal > 0 && lastReg) {
+    const prod = state.produtos.find(p => p.codigo === lastReg.produto);
+    const pb = parseFloat(prod?.pb || 0);
+    kgEl.textContent = pb > 0 ? fmtNum(acumReal * pb, 0) + ' kg' : '—';
+  } else {
+    kgEl.textContent = '—';
+  }
 
   document.getElementById('kpi-efic-pct').textContent = efic > 0 ? fmtNum(efic,0)+'%' : '—%';
   document.getElementById('kpi-efic-pct').style.color = efCor;
