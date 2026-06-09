@@ -848,19 +848,27 @@ async function carregarProgramacao() {
       return;
     }
 
-    itens = data.map(item => ({
-      codigo:      item.codigo,
-      descricao:   item.descricao,
-      qtd_cx:      item.qtd_cx,
-      vel:         item.vel,
-      medida:      item.medida,
-      entre_pecas: item.entre_pecas,
-      cx_min:      item.cx_min,
-      cx_h:        Math.round(item.cx_min * 60),
-      tempo_min:   item.tempo_min,
-      hora_inicio: item.hora_inicio,
-      hora_fim:    item.hora_fim
-    }));
+    itens = data.map(item => {
+      const vel  = item.vel || 0;
+      const med  = item.medida || 0;
+      const ep   = item.entre_pecas || 0;
+      const cxMin = (vel > 0 && (med + ep) > 0) ? (vel * 1000) / (med + ep) : 0;
+      const cxH   = Math.round(cxMin * 60);
+      const tmpMin = cxMin > 0 ? parseFloat((item.qtd_cx / cxMin).toFixed(1)) : 0;
+      return {
+        codigo:      item.codigo,
+        descricao:   item.descricao,
+        qtd_cx:      item.qtd_cx,
+        vel,
+        medida:      med,
+        entre_pecas: ep,
+        cx_min:      parseFloat(cxMin.toFixed(4)),
+        cx_h:        cxH,
+        tempo_min:   tmpMin,
+        hora_inicio: '',
+        hora_fim:    ''
+      };
+    });
 
     recalcularHorarios();
     renderTabela();
