@@ -1,0 +1,38 @@
+name: Sync to painel-esteira
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - '*.html'
+      - 'vercel.json'
+      - 'esteira_script.gs'
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout ritmoprod
+        uses: actions/checkout@v4
+
+      - name: Clone painel-esteira
+        run: |
+          git clone https://x-access-token:${{ secrets.PAINEL_ESTEIRA_TOKEN }}@github.com/p09728655-maker/painel-esteira.git target
+
+      - name: Copy files
+        run: |
+          cp esteira_operador.html target/
+          cp esteira_tv.html target/
+          cp simulacoes.html target/
+          cp programacao.html target/
+          cp vercel.json target/
+          cp esteira_script.gs target/ 2>/dev/null || true
+
+      - name: Commit and push
+        run: |
+          cd target
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet && echo "Nada a sincronizar" || git commit -m "sync: atualização automática de garcia-oderli/ritmoprod"
+          git push
