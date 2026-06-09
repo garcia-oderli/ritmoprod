@@ -1,0 +1,9 @@
+{
+  "routes": [
+    { "src": "/operador",    "dest": "/esteira_operador.html" },
+    { "src": "/tv",          "dest": "/esteira_tv.html"       },
+    { "src": "/simulacoes",  "dest": "/simulacoes.html"       },
+    { "src": "/programacao", "dest": "/programacao.html"      },
+    { "src": "/(.*)",        "dest": "/$1"                    }
+  ]
+}

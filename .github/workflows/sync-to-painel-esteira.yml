@@ -26,7 +26,7 @@ jobs:
           cp esteira_tv.html target/
           cp simulacoes.html target/
           cp programacao.html target/
-          cp vercel.json target/
+          cp painel_vercel.json target/vercel.json
           cp painel_home.html target/index.html
           cp esteira_script.gs target/ 2>/dev/null || true
 
