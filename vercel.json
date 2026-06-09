@@ -1,5 +1,6 @@
 {
   "version": 2,
+  "$comment": "garcia-oderli/ritmoprod → auto-sync via GitHub Actions",
   "buildCommand": "vite build && cp esteira_operador.html dist/ && cp esteira_tv.html dist/ && cp simulacoes.html dist/ && cp programacao.html dist/",
   "outputDirectory": "dist",
   "builds": [
