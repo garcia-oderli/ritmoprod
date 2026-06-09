@@ -23,6 +23,7 @@ jobs:
       - name: Copy files
         run: |
           cp app.html target/
+          cp app.html target/index.html
           cp esteira_operador.html target/
           cp esteira_tv.html target/
           cp simulacoes.html target/
@@ -30,7 +31,6 @@ jobs:
           cp pesos.html target/
           cp formulas.html target/
           cp painel_vercel.json target/vercel.json
-          cp painel_home.html target/index.html
           cp esteira_script.gs target/ 2>/dev/null || true
 
       - name: Commit and push
