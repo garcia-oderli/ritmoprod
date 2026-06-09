@@ -95,7 +95,7 @@ function doPost(e) {
 }
 
 // ── PRODUTO_CODIGO ────────────────────────────────────────────────────────────
-// Colunas: A=CODIGO B=DESCRICAO C=PB D=EAN128 E=MEDIDA(mm) F=VEL(m/min) G=ENTRE_PECAS(mm)
+// Colunas: A=CODIGO B=DESCRICAO C=PB D=EAN128 E=MEDIDA(mm) F=VEL(m/min) G=ENTRE_PECAS(mm) H=PONTOS
 
 function getProdutos() {
   var ss    = SpreadsheetApp.getActiveSpreadsheet();
@@ -115,7 +115,8 @@ function getProdutos() {
       ean128:      String(r[3] || "").trim(),
       medida:      parseFloat(r[4]) || 0,
       vel:         parseFloat(r[5]) || 0,
-      entre_pecas: parseFloat(r[6]) || 0
+      entre_pecas: parseFloat(r[6]) || 0,
+      pontos:      parseFloat(r[7]) || 0
     });
   }
 
