@@ -351,6 +351,24 @@ function getProgramacao(data) {
     });
   }
 
+  // Se vel ou medida estiverem zerados, enriquece com dados do cadastro de produtos
+  var produtos = null;
+  for (var j = 0; j < result.length; j++) {
+    var item = result[j];
+    if (item.vel === 0 || item.medida === 0) {
+      if (!produtos) produtos = getProdutos();
+      for (var k = 0; k < produtos.length; k++) {
+        if (produtos[k].codigo === item.codigo) {
+          if (item.vel    === 0) item.vel    = produtos[k].vel;
+          if (item.medida === 0) item.medida = produtos[k].medida;
+          if (item.entre_pecas === 0) item.entre_pecas = produtos[k].entre_pecas;
+          if (!item.descricao)   item.descricao = produtos[k].descricao;
+          break;
+        }
+      }
+    }
+  }
+
   result.sort(function(a, b) { return a.ordem - b.ordem; });
   return result;
 }
