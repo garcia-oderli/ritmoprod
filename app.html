@@ -401,7 +401,7 @@ input[type="number"]::-webkit-inner-spin-button { opacity: 1; }
 .tabela-prog tr:last-child td { border-bottom: none; }
 .tabela-prog tr:hover td { background: rgba(255,255,255,0.02); }
 td.td-ordem { color: var(--txt2); font-family: 'JetBrains Mono', monospace; font-size: 12px; width: 36px; }
-td.td-produto { font-weight: 600; white-space: nowrap; width: 300px; max-width: 300px; overflow: hidden; text-overflow: ellipsis; text-align: left; }
+td.td-produto { font-weight: 600; white-space: nowrap; width: 400px; max-width: 400px; overflow: hidden; text-overflow: ellipsis; text-align: left; }
 td.td-codigo { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--txt2); }
 td.td-num { font-family: 'JetBrains Mono', monospace; text-align: right; white-space: nowrap; }
 td.td-hora { font-family: 'JetBrains Mono', monospace; font-size: 13px; color: var(--accent); }
@@ -513,9 +513,10 @@ td.td-actions { width: 100px; text-align: right; }
   .card-title { font-size: 9px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 1.2px !important; color: #666 !important; border-bottom: 1px solid #aaa !important; padding-bottom: 4px !important; margin-bottom: 8px !important; }
   .tabela-prog { width: 100%; border-collapse: collapse; }
   .tabela-prog th { font-size: 9px !important; font-weight: 700 !important; text-transform: uppercase !important; letter-spacing: 0.5px !important; padding: 5px 8px !important; background: #f0f0f0 !important; color: #333 !important; border-top: 2px solid #333 !important; border-bottom: 1px solid #aaa !important; text-align: left !important; }
-  .tabela-prog td { font-size: 11px !important; padding: 6px 8px !important; border-bottom: 1px solid #e0e0e0 !important; color: #000 !important; }
+  .tabela-prog td { font-size: 11px !important; padding: 6px 8px !important; border-bottom: 1px solid #e0e0e0 !important; color: #000 !important; text-align: left !important; }
   .tabela-prog tr:last-child td { border-bottom: 2px solid #333 !important; }
   td.td-num { text-align: right !important; }
+  td.td-produto { white-space: normal !important; overflow: visible !important; text-overflow: clip !important; width: auto !important; max-width: none !important; text-align: left !important; }
   #prog-card-resumo { display: block !important; page-break-inside: avoid; }
   .resumo-grid { display: grid !important; grid-template-columns: repeat(7, 1fr) !important; gap: 6px !important; }
   .resumo-item { border: 1px solid #ccc !important; border-radius: 3px !important; padding: 6px 8px !important; background: #f8f8f8 !important; }
@@ -864,7 +865,7 @@ td.td-actions { width: 100px; text-align: right; }
         <thead>
           <tr>
             <th style="width:36px">#</th>
-            <th style="width:300px">Produto</th>
+            <th style="width:400px">Produto</th>
             <th>Código</th>
             <th style="text-align:right">Qtd (cx)</th>
             <th style="text-align:right">CX/H</th>
