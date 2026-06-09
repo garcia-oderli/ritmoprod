@@ -7,6 +7,7 @@ on:
       - '*.html'
       - 'vercel.json'
       - 'esteira_script.gs'
+      - 'painel_home.html'
 
 jobs:
   sync:
@@ -26,6 +27,7 @@ jobs:
           cp simulacoes.html target/
           cp programacao.html target/
           cp vercel.json target/
+          cp painel_home.html target/index.html
           cp esteira_script.gs target/ 2>/dev/null || true
 
       - name: Commit and push
