@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fórmulas — ritmoprod</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:      #0A0A0B;
+  --surface: #18181B;
+  --surface2:#222226;
+  --border:  #3F3F46;
+  --accent:  #FF5C1F;
+  --ok:      #16A34A;
+  --warn:    #EAB308;
+  --txt:     #FAFAFA;
+  --txt2:    #71717A;
+}
+*,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: 'Inter', system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+nav {
+  background: var(--surface);
+  border-bottom: 2px solid var(--accent);
+  padding: 10px 24px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 50;
+}
+.nav-brand { font-size: 18px; font-weight: 700; color: var(--accent); letter-spacing: 1px; text-decoration: none; }
+.nav-links { display: flex; gap: 6px; }
+.nav-links a {
+  color: var(--txt2); text-decoration: none; font-size: 13px;
+  padding: 5px 10px; border-radius: 6px; transition: background .15s, color .15s;
+}
+.nav-links a:hover, .nav-links a.active { background: var(--border); color: var(--txt); }
+
+.container { max-width: 860px; margin: 0 auto; padding: 32px 20px 48px; }
+
+.page-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 32px; flex-wrap: wrap; gap: 12px;
+}
+.page-header h2 { font-size: 22px; font-weight: 700; }
+.btn {
+  padding: 8px 16px; border-radius: 7px; border: none;
+  font-family: 'Inter', sans-serif; font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: opacity .15s;
+}
+.btn-outline { background: transparent; border: 1px solid var(--border); color: var(--txt2); }
+.btn-outline:hover { border-color: var(--txt2); color: var(--txt); }
+.btn-accent  { background: var(--accent); color: #fff; }
+.btn-accent:hover { opacity: 0.87; }
+
+/* SEÇÃO */
+.secao { margin-bottom: 28px; }
+.secao-titulo {
+  font-size: 11px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 1.5px; color: var(--accent);
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 6px; margin-bottom: 16px;
+}
+
+/* FORMULA CARD */
+.formula-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px 20px;
+  margin-bottom: 12px;
+}
+.formula-nome {
+  font-size: 13px; font-weight: 700; color: var(--txt);
+  margin-bottom: 10px; display: flex; align-items: center; gap: 8px;
+}
+.formula-nome .tag {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 4px;
+  background: rgba(255,92,31,0.15); color: var(--accent);
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.formula-expr {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 10px;
+  color: var(--ok);
+  letter-spacing: 0.3px;
+}
+.formula-expr .op { color: var(--txt2); }
+.formula-expr .var { color: var(--warn); }
+.formula-expr .val { color: var(--accent); }
+
+.formula-vars { display: flex; flex-direction: column; gap: 5px; }
+.var-row {
+  display: grid; grid-template-columns: 130px 1fr;
+  gap: 8px; align-items: baseline; font-size: 13px;
+}
+.var-nome {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px; color: var(--warn); font-weight: 500;
+}
+.var-desc { color: var(--txt2); }
+.var-unit { color: var(--txt2); font-size: 11px; font-style: italic; }
+
+.formula-nota {
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--txt2);
+  border-left: 2px solid var(--border);
+  padding-left: 10px;
+  line-height: 1.5;
+}
+.formula-nota strong { color: var(--txt); }
+
+/* TABELA DE PERÍODOS */
+.periodos-table {
+  width: 100%; border-collapse: collapse;
+  font-size: 13px;
+}
+.periodos-table th {
+  text-align: left; font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.7px; color: var(--txt2);
+  padding: 7px 12px; border-bottom: 1px solid var(--border);
+}
+.periodos-table td {
+  padding: 9px 12px; border-bottom: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+}
+.periodos-table tr:last-child td { border-bottom: none; }
+.periodos-table td:first-child { font-weight: 700; }
+.periodos-table .td-almoco td {
+  color: var(--txt2); font-style: italic;
+  font-family: 'Inter', sans-serif; font-size: 12px;
+}
+
+/* STATUS */
+.status-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+  gap: 10px;
+}
+.status-item {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 8px; padding: 12px 14px;
+}
+.status-faixa {
+  font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  font-weight: 700; margin-bottom: 4px;
+}
+.status-nome { font-size: 12px; color: var(--txt2); }
+
+/* PRINT */
+#print-header { display: none; }
+
+@media print {
+  @page { margin: 12mm 14mm; }
+  *, *::before, *::after {
+    color: #000 !important; background: #fff !important;
+    border-color: #ccc !important; box-shadow: none !important;
+  }
+  nav, .page-header .btn { display: none !important; }
+  #print-header { display: block !important; border-bottom: 2px solid #000 !important; padding-bottom: 8px; margin-bottom: 18px; }
+  body { font-family: Arial, sans-serif; font-size: 11px; }
+  .container { padding: 0; max-width: 100%; }
+  .page-header { margin-bottom: 14px; }
+  .page-header h2 { font-size: 16px; }
+  .secao { margin-bottom: 18px; page-break-inside: avoid; }
+  .secao-titulo { font-size: 9px; border-bottom: 1px solid #aaa !important; padding-bottom: 4px; margin-bottom: 10px; color: #333 !important; }
+  .formula-card { border: 1px solid #ccc !important; border-radius: 0 !important; padding: 10px 12px !important; margin-bottom: 8px !important; page-break-inside: avoid; }
+  .formula-nome { font-size: 12px; margin-bottom: 6px; }
+  .formula-nome .tag { background: #eee !important; color: #333 !important; font-size: 9px; }
+  .formula-expr { font-size: 13px !important; background: #f5f5f5 !important; border: 1px solid #ddd !important; padding: 7px 10px !important; margin-bottom: 8px !important; color: #000 !important; }
+  .formula-expr .op, .formula-expr .var, .formula-expr .val { color: #000 !important; }
+  .var-nome { color: #333 !important; }
+  .var-desc, .var-unit { color: #555 !important; }
+  .formula-nota { border-left: 2px solid #aaa !important; color: #444 !important; margin-top: 6px; font-size: 11px; }
+  .periodos-table th { font-size: 9px; padding: 5px 8px; background: #f0f0f0 !important; }
+  .periodos-table td { font-size: 11px; padding: 5px 8px; }
+  .status-item { border: 1px solid #ccc !important; border-radius: 0 !important; padding: 8px 10px !important; }
+  .status-faixa { font-size: 12px !important; }
+  .status-nome  { font-size: 11px !important; color: #555 !important; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-brand" href="/">ritmoprod<span style="color:#FF5C1F">.</span></a>
+  <div class="nav-links">
+    <a href="/operador">Operador</a>
+    <a href="/tv">TV</a>
+    <a href="/simulacoes">Simulações</a>
+    <a href="/programacao">Programação</a>
+    <a href="/formulas" class="active">Fórmulas</a>
+  </div>
+</nav>
+
+<div id="print-header" style="font-family:'Inter',Arial,sans-serif">
+  <div style="font-size:18px;font-weight:800;letter-spacing:1px">ritmoprod. — Fórmulas e Cálculos</div>
+  <div style="margin-top:3px;font-size:11px;color:#555" id="ph-data"></div>
+</div>
+
+<div class="container">
+
+  <div class="page-header">
+    <h2>Fórmulas e Cálculos</h2>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-outline" onclick="imprimir()">🖨 Imprimir / PDF</button>
+    </div>
+  </div>
+
+  <!-- CAPACIDADE -->
+  <div class="secao">
+    <div class="secao-titulo">Capacidade da Esteira</div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>CX/MIN — Capacidade por minuto</span><span class="tag">Base</span></div>
+      <div class="formula-expr">
+        cx_min <span class="op">=</span> (<span class="var">vel</span> <span class="op">×</span> <span class="val">1000</span>) <span class="op">/</span> (<span class="var">medida</span> <span class="op">+</span> <span class="var">entre_peças</span>)
+      </div>
+      <div class="formula-vars">
+        <div class="var-row"><span class="var-nome">vel</span><span class="var-desc">Velocidade da esteira <span class="var-unit">m/min</span></span></div>
+        <div class="var-row"><span class="var-nome">medida</span><span class="var-desc">Comprimento da caixa <span class="var-unit">mm</span></span></div>
+        <div class="var-row"><span class="var-nome">entre_peças</span><span class="var-desc">Espaço entre caixas na esteira <span class="var-unit">mm</span></span></div>
+      </div>
+      <div class="formula-nota">O vel é convertido de m/min → mm/min multiplicando por 1000, para ficar na mesma unidade que medida (mm).</div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>CX/H — Capacidade por hora</span></div>
+      <div class="formula-expr">
+        cx_h <span class="op">=</span> <span class="var">cx_min</span> <span class="op">×</span> <span class="val">60</span>
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>CX/MIN com Fadiga</span><span class="tag">Aplicado na programação</span></div>
+      <div class="formula-expr">
+        cx_min_real <span class="op">=</span> <span class="var">cx_min</span> <span class="op">×</span> (<span class="val">1</span> <span class="op">−</span> <span class="var">fadiga%</span> <span class="op">/</span> <span class="val">100</span>)
+      </div>
+      <div class="formula-vars">
+        <div class="var-row"><span class="var-nome">fadiga%</span><span class="var-desc">Fator de fadiga definido no painel Operador <span class="var-unit">% (ex: 15)</span></span></div>
+      </div>
+      <div class="formula-nota"><strong>Exemplo:</strong> fadiga 15% → cx_min_real = cx_min × 0,85 — reduz 15% da capacidade teórica.</div>
+    </div>
+  </div>
+
+  <!-- TEMPO E META -->
+  <div class="secao">
+    <div class="secao-titulo">Tempo e Meta</div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>Tempo para produzir um lote</span></div>
+      <div class="formula-expr">
+        tempo_min <span class="op">=</span> <span class="var">qtd_cx</span> <span class="op">/</span> <span class="var">cx_min_real</span>
+      </div>
+      <div class="formula-vars">
+        <div class="var-row"><span class="var-nome">qtd_cx</span><span class="var-desc">Quantidade de caixas do lote</span></div>
+        <div class="var-row"><span class="var-nome">cx_min_real</span><span class="var-desc">Capacidade real (já com fadiga)</span></div>
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>Meta por período</span></div>
+      <div class="formula-expr">
+        meta <span class="op">=</span> <span class="var">cx_min_real</span> <span class="op">×</span> <span class="var">min_período</span>
+      </div>
+      <div class="formula-vars">
+        <div class="var-row"><span class="var-nome">min_período</span><span class="var-desc">Duração do período em minutos (ver tabela abaixo)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PERÍODOS -->
+  <div class="secao">
+    <div class="secao-titulo">Períodos do Turno</div>
+    <div class="formula-card" style="padding:0;overflow:hidden">
+      <table class="periodos-table">
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Horário</th>
+            <th style="text-align:right">Minutos</th>
+            <th>Observação</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>P1</td><td>07:00 – 08:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr><td>P2</td><td>08:00 – 09:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr><td>P3</td><td>09:00 – 10:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr><td>P4</td><td>10:00 – 11:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr class="td-almoco"><td colspan="4" style="text-align:center;padding:8px">— Almoço 11:00 – 12:12 (72 min) —</td></tr>
+          <tr><td>P5</td><td>12:12 – 13:00</td><td style="text-align:right">48</td><td style="color:var(--warn);font-family:'Inter',sans-serif;font-size:12px">Período reduzido após almoço</td></tr>
+          <tr><td>P6</td><td>13:00 – 14:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr><td>P7</td><td>14:00 – 15:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr><td>P8</td><td>15:00 – 16:00</td><td style="text-align:right">60</td><td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">—</td></tr>
+          <tr><td>P9</td><td>16:00 – 16:45</td><td style="text-align:right">45</td><td style="color:var(--warn);font-family:'Inter',sans-serif;font-size:12px">Período reduzido — fim do turno</td></tr>
+          <tr style="background:rgba(22,163,74,0.06)">
+            <td style="color:var(--ok);font-family:'Inter',sans-serif;font-size:12px" colspan="2">Total produtivo</td>
+            <td style="text-align:right;color:var(--ok);font-weight:700">513</td>
+            <td style="color:var(--txt2);font-family:'Inter',sans-serif;font-size:12px">(8h33min)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EFICIÊNCIA E INDICADORES -->
+  <div class="secao">
+    <div class="secao-titulo">Eficiência e Indicadores</div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>Eficiência do período</span></div>
+      <div class="formula-expr">
+        eficiência% <span class="op">=</span> (<span class="var">realizado</span> <span class="op">/</span> <span class="var">meta</span>) <span class="op">×</span> <span class="val">100</span>
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>Projeção de fim de turno</span></div>
+      <div class="formula-expr">
+        projeção <span class="op">=</span> <span class="var">acum_real</span> <span class="op">+</span> (<span class="var">cx_min_real</span> <span class="op">×</span> <span class="var">min_restantes</span>)
+      </div>
+      <div class="formula-vars">
+        <div class="var-row"><span class="var-nome">acum_real</span><span class="var-desc">Produção acumulada até o momento</span></div>
+        <div class="var-row"><span class="var-nome">min_restantes</span><span class="var-desc">Minutos restantes no turno (desconta almoço se ainda não passou)</span></div>
+      </div>
+    </div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>Ritmo necessário para bater a meta</span></div>
+      <div class="formula-expr">
+        necessário <span class="op">=</span> (<span class="var">meta_turno</span> <span class="op">−</span> <span class="var">acum_real</span>) <span class="op">/</span> (<span class="var">min_restantes</span> <span class="op">/</span> <span class="val">60</span>)
+      </div>
+      <div class="formula-nota">Resultado em cx/h — quanto precisa fazer por hora para fechar o turno na meta.</div>
+    </div>
+  </div>
+
+  <!-- KG -->
+  <div class="secao">
+    <div class="secao-titulo">Peso (kg)</div>
+
+    <div class="formula-card">
+      <div class="formula-nome"><span>Kg produzido</span></div>
+      <div class="formula-expr">
+        kg <span class="op">=</span> <span class="var">acum_real</span> <span class="op">×</span> <span class="var">pb</span>
+      </div>
+      <div class="formula-vars">
+        <div class="var-row"><span class="var-nome">pb</span><span class="var-desc">Peso bruto da caixa — coluna C da aba PRODUTO_CODIGO <span class="var-unit">kg/cx</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS -->
+  <div class="secao">
+    <div class="secao-titulo">Classificação de Status</div>
+    <div class="status-grid">
+      <div class="status-item">
+        <div class="status-faixa" style="color:var(--ok)">≥ 100%</div>
+        <div class="status-nome">✓ OK — dentro da meta</div>
+      </div>
+      <div class="status-item">
+        <div class="status-faixa" style="color:var(--warn)">90% – 99%</div>
+        <div class="status-nome">! ATENÇÃO — levemente abaixo</div>
+      </div>
+      <div class="status-item">
+        <div class="status-faixa" style="color:var(--red, #DC2626)">< 90%</div>
+        <div class="status-nome">✗ ABAIXO — intervenção necessária</div>
+      </div>
+      <div class="status-item">
+        <div class="status-faixa" style="color:var(--txt2)">sem dados</div>
+        <div class="status-nome">— período ainda não lançado</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function imprimir() {
+  const now = new Date();
+  document.getElementById('ph-data').textContent =
+    'Emitido em: ' + now.toLocaleDateString('pt-BR') + ' às ' + now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  window.print();
+}
+</script>
+</body>
+</html>

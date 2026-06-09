@@ -5,6 +5,7 @@
     { "src": "/simulacoes",  "dest": "/simulacoes.html"       },
     { "src": "/programacao", "dest": "/programacao.html"      },
     { "src": "/pesos",       "dest": "/pesos.html"            },
+    { "src": "/formulas",    "dest": "/formulas.html"         },
     { "src": "/(.*)",        "dest": "/$1"                    }
   ]
 }
