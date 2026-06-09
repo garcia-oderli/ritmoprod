@@ -5,7 +5,7 @@ on:
     branches: [master]
     paths:
       - '*.html'
-      - 'vercel.json'
+      - 'painel_vercel.json'
       - 'esteira_script.gs'
       - 'painel_home.html'
 
@@ -22,6 +22,7 @@ jobs:
 
       - name: Copy files
         run: |
+          cp app.html target/
           cp esteira_operador.html target/
           cp esteira_tv.html target/
           cp simulacoes.html target/
