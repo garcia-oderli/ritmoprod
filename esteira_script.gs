@@ -122,12 +122,16 @@ function buscarPorEAN(ean) {
   return null;
 }
 
+function normCodigo(s) {
+  return String(s || "").replace(/\./g, "").replace(/\s/g, "").toUpperCase();
+}
+
 function buscarPorCodigo(codigo) {
   if (!codigo) return null;
-  var upper = codigo.toUpperCase();
+  var norm = normCodigo(codigo);
   var produtos = getProdutos();
   for (var i = 0; i < produtos.length; i++) {
-    if (produtos[i].codigo.toUpperCase() === upper) return produtos[i];
+    if (normCodigo(produtos[i].codigo) === norm) return produtos[i];
   }
   return null;
 }
