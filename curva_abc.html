@@ -1442,14 +1442,12 @@ async function parsePDFToData(file){
   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
   let periodLabel='';
   const rows=[];
-  const seenCods=new Set(); // avoid duplicates from repeated page headers
+  const seenCods=new Set();
 
   for(let pn=1;pn<=pdf.numPages;pn++){
     const page=await pdf.getPage(pn);
     const content=await page.getTextContent();
 
-    // Sort all items top-to-bottom then left-to-right and join as one string
-    // This avoids Y-bucket tolerance issues that caused missed rows
     const pageText=content.items
       .filter(i=>i.str&&i.str.trim())
       .sort((a,b)=>{
@@ -1460,7 +1458,6 @@ async function parsePDFToData(file){
       .map(i=>i.str).join(' ')
       .replace(/\s+/g,' ');
 
-    // Extract period: "Período : 01/01/26 até 31/01/26"
     if(!periodLabel){
       const m=pageText.match(/Per[ií]odo\s*:\s*(\d{2})\/(\d{2})\/(\d{2,4})/i);
       if(m){
@@ -1471,36 +1468,32 @@ async function parsePDFToData(file){
       }
     }
 
-    // Global search — finds every data row even if text items span different Y positions
-    // Pattern: cod.prod(3.3.3) description qty vlr_vendas vlr_custo pct_lucro vlr_lucro [ABC]#####
     const dataRe=/(\d{3}\.\d{3}\.\d{3})\s+(.+?)\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.,]+)\s+(-?[\d.]+,\d{2})\s+([ABC]\d{5})/g;
     let dm;
     while((dm=dataRe.exec(pageText))!==null){
       const cod=dm[1];
-      if(seenCods.has(cod))continue; // skip repeated header rows
+      if(seenCods.has(cod))continue;
       seenCods.add(cod);
       const desc=dm[2].trim();
-      const qty=parseBRNum(dm[3]);   // Quantidade
-      const fat=parseBRNum(dm[4]);   // Vlr.Vendas
-        rows.push({
-          [COL.ITEM]:rows.length+1,
-          [COL.COD]:cod,
-          [COL.DESC]:desc,
-          [COL.QTD]:qty,
-          [COL.QTD_MES]:0,
-          [COL.FAT]:fat,
-          [COL.FAT_MES]:0,
-          [COL.TICKET]:qty>0?fat/qty:0,
-          [COL.ABC_VAL]:'',   // will be recalculated by calcABCDinamico
-          [COL.ABC_QTD]:'',
-          [COL.CRUZADA]:'',
-          [COL.ESTRATEGIA]:'',
-          [COL.FLAG]:'',
-        });
-      }
+      const qty=parseBRNum(dm[3]);
+      const fat=parseBRNum(dm[4]);
+      rows.push({
+        [COL.ITEM]:rows.length+1,
+        [COL.COD]:cod,
+        [COL.DESC]:desc,
+        [COL.QTD]:qty,
+        [COL.QTD_MES]:0,
+        [COL.FAT]:fat,
+        [COL.FAT_MES]:0,
+        [COL.TICKET]:qty>0?fat/qty:0,
+        [COL.ABC_VAL]:'',
+        [COL.ABC_QTD]:'',
+        [COL.CRUZADA]:'',
+        [COL.ESTRATEGIA]:'',
+        [COL.FLAG]:'',
+      });
     }
   }
-
   if(!rows.length) throw new Error(
     'Nenhum produto encontrado. Verifique se é o relatório "Curva ABC de Produtos" do Módulo Gerencial.'
   );
