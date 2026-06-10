@@ -725,6 +725,10 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
 .evo-rank-table td{padding:.4rem .65rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text);font-size:.78rem;}
 .evo-rank-table tbody tr:last-child td{border-bottom:none;}
 .evo-rank-table tbody tr:hover{background:rgba(255,92,31,.05);}
+.flag-cell{cursor:pointer;user-select:none;transition:opacity .15s;}
+.flag-cell:hover{opacity:.75;}
+.flag-cell .flag-empty{color:var(--text-muted);font-size:.7rem;border:1px dashed rgba(255,255,255,.18);border-radius:4px;padding:.1rem .45rem;transition:border-color .15s;}
+.flag-cell:hover .flag-empty{border-color:var(--accent);color:var(--accent);}
 .evo-kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;}
 @media(max-width:900px){.evo-kpi-strip{grid-template-columns:repeat(2,1fr);}}
 .evo-kpi{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:.85rem 1rem;box-shadow:var(--shadow);}
@@ -2786,6 +2790,53 @@ function addInsight(list,html,extraClass=''){
 // ====================================================================
 // TABLE
 // ====================================================================
+
+// ====================================================================
+// FLAG TOGGLE — Edição de EXC / LANÇ direto na tabela
+// ====================================================================
+function calcEstrategiaRow(r){
+  const flag=String(r[COL.FLAG]||'').trim().toUpperCase();
+  const v=String(r[COL.ABC_VAL]||'').trim().toUpperCase();
+  const q=String(r[COL.ABC_QTD]||'').trim().toUpperCase();
+  if(flag==='EXC'){
+    if(q==='A')return'EXCLUSIVO ALTO GIRO';
+    if(q==='B')return'EXCLUSIVO MÉDIO GIRO';
+    return'EXCLUSIVO BAIXO GIRO';
+  }
+  if(flag==='LANÇ'||flag==='LANC'){
+    if(q==='A')return'LANÇAMENTO ALTO GIRO';
+    if(q==='B')return'LANÇAMENTO MÉDIO GIRO';
+    return'LANÇAMENTO BAIXO GIRO';
+  }
+  const cz=v+q;
+  if(cz==='AA')return'ESTRELA';
+  if(cz==='AC')return'ALTO TICKET';
+  if(cz==='AB')return'EQUILÍBRIO';
+  if(cz==='BA')return'ATENÇÃO';
+  if(cz==='BB')return'EQUILÍBRIO';
+  if(cz==='BC')return'ATENÇÃO';
+  return'CAUDA';
+}
+
+function toggleFlag(itemNum){
+  const r=RAW.find(row=>String(row[COL.ITEM])===String(itemNum));
+  if(!r)return;
+  const cur=String(r[COL.FLAG]||'').trim().toUpperCase();
+  // Cycle: '' → 'EXC' → 'LANÇ' → ''
+  r[COL.FLAG]=cur===''?'EXC':cur==='EXC'?'LANÇ':'';
+  // Recalculate CRUZADA
+  const v=String(r[COL.ABC_VAL]||'').trim().toUpperCase();
+  const q=String(r[COL.ABC_QTD]||'').trim().toUpperCase();
+  const fl=String(r[COL.FLAG]||'').trim().toUpperCase();
+  if(fl==='EXC')r[COL.CRUZADA]='EXC_'+v;
+  else if(fl==='LANÇ'||fl==='LANC')r[COL.CRUZADA]='LANÇ_'+v;
+  else r[COL.CRUZADA]=v+q;
+  // Recalculate ESTRATEGIA
+  r[COL.ESTRATEGIA]=calcEstrategiaRow(r);
+  // Refresh table + KPIs + charts
+  applyFilters();
+}
+
 function renderTable(){
   const sorted=sortByFat(filtered);
   const total=sorted.length;
@@ -2829,7 +2880,9 @@ function renderTable(){
       <td>${classBadge(cls)}</td>
       <td>${classBadge(clsQ)}</td>
       <td>${cz?cruzadaBadge(cz):''}</td>
-      <td>${flag?flagBadge(flag):''}</td>
+      <td class="flag-cell" onclick="toggleFlag(${r[COL.ITEM]})" title="Clique: EXC → LANÇ → Limpar">
+        ${flag?flagBadge(flag):'<span class=\"flag-empty\">+ FLAG</span>'}
+      </td>
       <td title="${est}">${truncate(est,22)}</td>
     `;
     tbody.appendChild(tr);
