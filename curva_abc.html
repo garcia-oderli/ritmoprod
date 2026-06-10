@@ -198,6 +198,33 @@ header{background:var(--card);color:var(--text);padding:0 1.5rem;display:flex;al
 /* ── RESUMO EXECUTIVO ────────────────────────────────────────────── */
 #sec-resumo-exec{display:none;}
 #sec-classes{display:none;padding:1.2rem 0;}
+#sec-mov{display:none;padding:1.2rem 0;}
+.mov-header{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:1rem;}
+.mov-label{font-size:.82rem;color:var(--text-muted);}
+.mov-period-badge{font-size:.82rem;font-weight:700;padding:.25rem .7rem;border-radius:6px;background:var(--surface2,#222226);border:1px solid var(--border);}
+.mov-cards{display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.mov-card{flex:1;min-width:110px;background:var(--surface2,#222226);border:1px solid var(--border);border-radius:8px;padding:.7rem .9rem;cursor:pointer;transition:border-color .15s;}
+.mov-card:hover{border-color:var(--accent);}
+.mov-card.active{border-color:var(--accent);background:rgba(255,92,31,.08);}
+.mov-card-val{font-size:1.5rem;font-weight:800;line-height:1;}
+.mov-card-lbl{font-size:.68rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;margin-top:.25rem;}
+.mov-card.up .mov-card-val{color:#4ade80;}
+.mov-card.down .mov-card-val{color:#f87171;}
+.mov-card.new .mov-card-val{color:#60a5fa;}
+.mov-card.out .mov-card-val{color:#fb923c;}
+.mov-card.stable .mov-card-val{color:var(--text-muted);}
+.mov-table{width:100%;border-collapse:collapse;font-size:.79rem;}
+.mov-table thead th{background:var(--surface2,#222226);color:var(--text-muted);padding:.5rem .65rem;text-align:left;font-size:.67rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);}
+.mov-table tbody tr:nth-child(even){background:rgba(255,255,255,.02);}
+.mov-table tbody tr:hover{background:rgba(255,92,31,.06);}
+.mov-table tbody td{padding:.42rem .65rem;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;}
+.mov-table tbody td.td-desc{max-width:240px;overflow:hidden;text-overflow:ellipsis;}
+.mov-arrow{font-size:.9rem;color:var(--text-muted);margin:0 .2rem;}
+.badge-up{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.68rem;font-weight:700;background:rgba(74,222,128,.15);color:#4ade80;}
+.badge-down{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.68rem;font-weight:700;background:rgba(248,113,113,.15);color:#f87171;}
+.badge-new{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.68rem;font-weight:700;background:rgba(96,165,250,.15);color:#60a5fa;}
+.badge-out{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.68rem;font-weight:700;background:rgba(251,146,60,.15);color:#fb923c;}
+.badge-stable{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.68rem;font-weight:700;background:rgba(255,255,255,.07);color:var(--text-muted);}
 .classes-toolbar{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem;}
 .classes-toolbar input{background:var(--surface2,#222226);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:.42rem .85rem;font-size:.82rem;font-family:inherit;width:260px;}
 .classes-toolbar input::placeholder{color:var(--text-muted);}
@@ -906,9 +933,41 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
     <button class="tab-btn" data-tab="resumo">📋 Resumo Executivo</button>
     <button class="tab-btn" id="tab-btn-evolucao" data-tab="evolucao" style="display:none;">📈 Evolução Mensal</button>
     <button class="tab-btn" id="tab-btn-classes" data-tab="classes" style="display:none;">✎ Editar Classes</button>
+    <button class="tab-btn" id="tab-btn-mov" data-tab="mov" style="display:none;">📊 Movimentação</button>
   </div>
 
   <main>
+    <!-- MOVIMENTAÇÃO DE CLASSE -->
+    <section id="sec-mov">
+      <div class="section-title">Movimentação de Classe — Último Período</div>
+      <div class="mov-header">
+        <span class="mov-label">Comparando:</span>
+        <span class="mov-period-badge" id="mov-period-from">—</span>
+        <span class="mov-arrow">→</span>
+        <span class="mov-period-badge" id="mov-period-to">—</span>
+      </div>
+      <div class="mov-cards" id="mov-cards"></div>
+      <div style="overflow-x:auto;max-height:calc(100vh - 310px);overflow-y:auto;">
+        <table class="mov-table">
+          <thead><tr>
+            <th>Cód.</th>
+            <th>Descrição</th>
+            <th>Cl.Val. Ant.</th>
+            <th>Cl.Val. Atual</th>
+            <th>Cl.Qtd. Ant.</th>
+            <th>Cl.Qtd. Atual</th>
+            <th>Cruzada Ant.</th>
+            <th>Cruzada Atual</th>
+            <th style="text-align:right">Fat. Ant.</th>
+            <th style="text-align:right">Fat. Atual</th>
+            <th style="text-align:right">Δ Fat.%</th>
+            <th>Status</th>
+          </tr></thead>
+          <tbody id="mov-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- EDITAR CLASSES -->
     <section id="sec-classes">
       <div class="section-title">Editar Classes do Portfólio</div>
@@ -1978,7 +2037,10 @@ function loadFile(file){
       document.getElementById('file-info-text').textContent=file.name+' · '+RAW.length+' produtos';
       const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
       const tbe=document.getElementById('tab-btn-evolucao');if(tbe)tbe.style.display='inline-block';
+    const tbc2=document.getElementById('tab-btn-classes');if(tbc2)tbc2.style.display='inline-block';
+    const tbm2=document.getElementById('tab-btn-mov');if(tbm2)tbm2.style.display='inline-block';
       const tbc=document.getElementById('tab-btn-classes');if(tbc)tbc.style.display='inline-block';
+      const tbm=document.getElementById('tab-btn-mov');if(tbm)tbm.style.display='inline-block';
       const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
       updatePeriodo();
       // 1ª chamada: renderiza KPIs, tabela e insights imediatamente
@@ -2016,6 +2078,8 @@ async function loadFilePDF(file){
     dashboardEl.style.display='flex';
     const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
     const tbe=document.getElementById('tab-btn-evolucao');if(tbe)tbe.style.display='inline-block';
+    const tbc2=document.getElementById('tab-btn-classes');if(tbc2)tbc2.style.display='inline-block';
+    const tbm2=document.getElementById('tab-btn-mov');if(tbm2)tbm2.style.display='inline-block';
     const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
     updatePeriodo();
     applyFilters();
@@ -3320,15 +3384,18 @@ function switchTab(tab){
   const isResumo=tab==='resumo';
   const isEvo=tab==='evolucao';
   const isClasses=tab==='classes';
+  const isMov=tab==='mov';
   document.getElementById('sec-resumo-exec').style.display=isResumo?'block':'none';
   document.getElementById('sec-classes').style.display=isClasses?'block':'none';
+  document.getElementById('sec-mov').style.display=isMov?'block':'none';
   const secEvo=document.getElementById('sec-evolucao');
   if(secEvo) secEvo.style.display=isEvo?'flex':'none';
   ALL_ANALYSIS_SECTIONS.filter(id=>id!=='sec-evolucao').forEach(id=>{
     const el=document.getElementById(id);
-    if(el)el.style.display=(isResumo||isEvo||isClasses)?'none':'';
+    if(el)el.style.display=(isResumo||isEvo||isClasses||isMov)?'none':'';
   });
   if(isClasses) renderClassesTab();
+  if(isMov) renderMovTab();
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 
@@ -3439,6 +3506,151 @@ function applyClassChanges(){
   switchTab('analise');
   applyFilters();
   try{const m=computeMetrics();renderCharts(m);}catch(e){}
+}
+
+
+// ====================================================================
+// MOVIMENTAÇÃO DE CLASSE — Último vs Penúltimo Período
+// ====================================================================
+let _movFilter='all';
+
+function _classRank(c){return c==='A'?1:c==='B'?2:3;}
+
+function renderMovTab(){
+  const tbody=document.getElementById('mov-tbody');
+  const cardsEl=document.getElementById('mov-cards');
+  if(!tbody)return;
+
+  if(PERIODOS.length<2){
+    tbody.innerHTML='<tr><td colspan="12" style="color:var(--text-muted);padding:2rem;text-align:center;">Carregue pelo menos 2 períodos para ver a movimentação.</td></tr>';
+    if(cardsEl)cardsEl.innerHTML='';
+    return;
+  }
+
+  const prev=PERIODOS[PERIODOS.length-2];
+  const curr=PERIODOS[PERIODOS.length-1];
+
+  const fromEl=document.getElementById('mov-period-from');
+  const toEl=document.getElementById('mov-period-to');
+  if(fromEl)fromEl.textContent=prev.label;
+  if(toEl)toEl.textContent=curr.label;
+
+  // Build lookup maps by COD
+  const prevMap=new Map();
+  for(const r of prev.data) prevMap.set(String(r[COL.COD]||'').trim(), r);
+  const currMap=new Map();
+  for(const r of curr.data) currMap.set(String(r[COL.COD]||'').trim(), r);
+
+  const rows=[];
+
+  // Products in curr
+  for(const [cod, rc] of currMap){
+    if(!cod)continue;
+    const rp=prevMap.get(cod);
+    const cvCurr=String(rc[COL.ABC_VAL]||'').trim().toUpperCase();
+    const cqCurr=String(rc[COL.ABC_QTD]||'').trim().toUpperCase();
+    const czCurr=String(rc[COL.CRUZADA]||'').trim().toUpperCase();
+    const fatCurr=Number(rc[COL.FAT]||0);
+
+    if(!rp){
+      rows.push({cod,desc:rc[COL.DESC]||'',cvPrev:'—',cqPrev:'—',czPrev:'—',fatPrev:0,cvCurr,cqCurr,czCurr,fatCurr,status:'new'});
+      continue;
+    }
+    const cvPrev=String(rp[COL.ABC_VAL]||'').trim().toUpperCase();
+    const cqPrev=String(rp[COL.ABC_QTD]||'').trim().toUpperCase();
+    const czPrev=String(rp[COL.CRUZADA]||'').trim().toUpperCase();
+    const fatPrev=Number(rp[COL.FAT]||0);
+
+    // Determine movement by CLASS VALOR
+    let status='stable';
+    if(cvPrev&&cvCurr&&cvPrev!==cvCurr){
+      status=_classRank(cvCurr)<_classRank(cvPrev)?'up':'down';
+    }
+    rows.push({cod,desc:rc[COL.DESC]||'',cvPrev,cqPrev,czPrev,fatPrev,cvCurr,cqCurr,czCurr,fatCurr,status});
+  }
+
+  // Products in prev but not curr
+  for(const [cod, rp] of prevMap){
+    if(!cod||currMap.has(cod))continue;
+    const cvPrev=String(rp[COL.ABC_VAL]||'').trim().toUpperCase();
+    const cqPrev=String(rp[COL.ABC_QTD]||'').trim().toUpperCase();
+    const czPrev=String(rp[COL.CRUZADA]||'').trim().toUpperCase();
+    const fatPrev=Number(rp[COL.FAT]||0);
+    rows.push({cod,desc:rp[COL.DESC]||'',cvPrev,cqPrev,czPrev,fatPrev,cvCurr:'—',cqCurr:'—',czCurr:'—',fatCurr:0,status:'out'});
+  }
+
+  // Counts
+  const counts={up:0,down:0,new:0,out:0,stable:0};
+  for(const r of rows)counts[r.status]=(counts[r.status]||0)+1;
+
+  // Cards
+  const cardDefs=[
+    {key:'up',icon:'↑',label:'Subiram',cls:'up'},
+    {key:'down',icon:'↓',label:'Desceram',cls:'down'},
+    {key:'new',icon:'+',label:'Novos',cls:'new'},
+    {key:'out',icon:'−',label:'Saíram',cls:'out'},
+    {key:'stable',icon:'=',label:'Estáveis',cls:'stable'},
+  ];
+  if(cardsEl){
+    cardsEl.innerHTML=cardDefs.map(d=>
+      `<div class="mov-card ${d.cls}${_movFilter===d.key?' active':''}" onclick="setMovFilter('${d.key}')">
+        <div class="mov-card-val">${d.icon} ${counts[d.key]||0}</div>
+        <div class="mov-card-lbl">${d.label}</div>
+      </div>`
+    ).join('')+
+    `<div class="mov-card${_movFilter==='all'?' active':''}" onclick="setMovFilter('all')" style="border-style:dashed;">
+        <div class="mov-card-val" style="color:var(--accent);">${rows.length}</div>
+        <div class="mov-card-lbl">Todos</div>
+      </div>`;
+  }
+
+  const fmt=v=>v==null||v===0?'—':'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const fmtDelta=(a,b)=>{
+    if(!a||!b||a===0)return'—';
+    const d=(b-a)/a*100;
+    const s=d>=0?'+':'';
+    const color=d>0?'#4ade80':d<0?'#f87171':'var(--text-muted)';
+    return`<span style="color:${color};font-weight:700;">${s}${d.toFixed(1)}%</span>`;
+  };
+  const clsBadge=v=>{
+    if(!v||v==='—')return`<span style="color:var(--text-muted)">—</span>`;
+    const col=v==='A'?'#60a5fa':v==='B'?'#fbbf24':'#4ade80';
+    return`<span style="color:${col};font-weight:700;">${v}</span>`;
+  };
+  const statusBadge=s=>{
+    const map={up:'<span class="badge-up">↑ SUBIU</span>',down:'<span class="badge-down">↓ DESCEU</span>',new:'<span class="badge-new">+ NOVO</span>',out:'<span class="badge-out">− SAIU</span>',stable:'<span class="badge-stable">= ESTÁVEL</span>'};
+    return map[s]||'';
+  };
+
+  const filtered=_movFilter==='all'?rows:rows.filter(r=>r.status===_movFilter);
+  // Sort: up first, then down, new, out, stable; within each by fatCurr desc
+  const order={up:0,down:1,new:2,out:3,stable:4};
+  filtered.sort((a,b)=>order[a.status]-order[b.status]||b.fatCurr-a.fatCurr);
+
+  if(!filtered.length){
+    tbody.innerHTML='<tr><td colspan="12" style="color:var(--text-muted);padding:2rem;text-align:center;">Nenhum produto nessa categoria.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML=filtered.map(r=>`<tr>
+    <td style="font-family:monospace;font-size:.73rem;">${r.cod}</td>
+    <td class="td-desc" title="${String(r.desc).replace(/"/g,'&quot;')}">${r.desc}</td>
+    <td style="text-align:center;">${clsBadge(r.cvPrev)}</td>
+    <td style="text-align:center;">${clsBadge(r.cvCurr)}</td>
+    <td style="text-align:center;">${clsBadge(r.cqPrev)}</td>
+    <td style="text-align:center;">${clsBadge(r.cqCurr)}</td>
+    <td style="font-size:.73rem;color:var(--text-muted);">${r.czPrev}</td>
+    <td style="font-size:.73rem;">${r.czCurr}</td>
+    <td style="text-align:right;font-size:.75rem;">${fmt(r.fatPrev)}</td>
+    <td style="text-align:right;font-size:.75rem;">${fmt(r.fatCurr)}</td>
+    <td style="text-align:right;">${fmtDelta(r.fatPrev,r.fatCurr)}</td>
+    <td>${statusBadge(r.status)}</td>
+  </tr>`).join('');
+}
+
+function setMovFilter(f){
+  _movFilter=f;
+  renderMovTab();
 }
 
 // ====================================================================
