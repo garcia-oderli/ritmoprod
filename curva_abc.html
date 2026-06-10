@@ -197,6 +197,25 @@ header{background:var(--card);color:var(--text);padding:0 1.5rem;display:flex;al
 
 /* ── RESUMO EXECUTIVO ────────────────────────────────────────────── */
 #sec-resumo-exec{display:none;}
+#sec-classes{display:none;padding:1.2rem 0;}
+.classes-toolbar{display:flex;gap:.7rem;align-items:center;flex-wrap:wrap;margin-bottom:1rem;}
+.classes-toolbar input{background:var(--surface2,#222226);border:1px solid var(--border);border-radius:7px;color:var(--text);padding:.42rem .85rem;font-size:.82rem;font-family:inherit;width:260px;}
+.classes-toolbar input::placeholder{color:var(--text-muted);}
+.classes-toolbar .cls-count{font-size:.78rem;color:var(--text-muted);margin-left:auto;}
+.cls-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.cls-table thead th{background:var(--surface2,#222226);color:var(--text-muted);padding:.5rem .65rem;text-align:left;font-size:.68rem;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;position:sticky;top:0;z-index:1;border-bottom:1px solid var(--border);}
+.cls-table tbody tr:nth-child(even){background:rgba(255,255,255,.02);}
+.cls-table tbody tr:hover{background:rgba(255,92,31,.06);}
+.cls-table tbody td{padding:.4rem .65rem;border-bottom:1px solid rgba(255,255,255,.04);white-space:nowrap;}
+.cls-table tbody td.td-desc{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cls-sel{background:var(--surface2,#222226);border:1px solid var(--border);border-radius:5px;color:var(--text);padding:.22rem .5rem;font-size:.78rem;font-family:inherit;cursor:pointer;transition:border-color .15s;}
+.cls-sel:focus{outline:none;border-color:var(--accent);}
+.cls-sel.sel-a{border-color:rgba(59,130,246,.5);color:#60a5fa;}
+.cls-sel.sel-b{border-color:rgba(245,158,11,.5);color:#fbbf24;}
+.cls-sel.sel-c{border-color:rgba(34,197,94,.5);color:#4ade80;}
+.cls-sel.sel-exc{border-color:rgba(168,85,247,.5);color:#c084fc;}
+.cls-sel.sel-lanc{border-color:rgba(234,179,8,.5);color:#facc15;}
+.cls-badge-auto{display:inline-block;font-size:.68rem;padding:.12rem .4rem;border-radius:4px;font-weight:700;background:rgba(255,92,31,.15);color:var(--accent);min-width:50px;text-align:center;}
 .re-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem;flex-wrap:wrap;background:linear-gradient(135deg,var(--card) 0%,var(--surface2,#222226) 100%);border-radius:var(--radius);padding:1rem 1.4rem;box-shadow:var(--shadow);border:1px solid var(--border);}
 .re-header h2{font-size:1.2rem;font-weight:700;color:var(--text);margin:0;}
 .re-header-meta{font-size:.75rem;color:var(--text-muted);}
@@ -886,9 +905,35 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
     <button class="tab-btn active" data-tab="analise">📊 Análise</button>
     <button class="tab-btn" data-tab="resumo">📋 Resumo Executivo</button>
     <button class="tab-btn" id="tab-btn-evolucao" data-tab="evolucao" style="display:none;">📈 Evolução Mensal</button>
+    <button class="tab-btn" id="tab-btn-classes" data-tab="classes" style="display:none;">✎ Editar Classes</button>
   </div>
 
   <main>
+    <!-- EDITAR CLASSES -->
+    <section id="sec-classes">
+      <div class="section-title">Editar Classes do Portfólio</div>
+      <div class="classes-toolbar">
+        <input id="cls-search" type="text" placeholder="🔍 Buscar produto ou código..." oninput="renderClassesTab()">
+        <button class="btn-secondary" style="font-size:.78rem;padding:.38rem .8rem;" onclick="applyClassChanges()">✓ Aplicar e Fechar</button>
+        <span class="cls-count" id="cls-count"></span>
+      </div>
+      <div style="overflow-x:auto;max-height:calc(100vh - 260px);overflow-y:auto;">
+        <table class="cls-table" id="cls-table-body">
+          <thead><tr>
+            <th>#</th>
+            <th>Cód.</th>
+            <th>Descrição</th>
+            <th>CLASS VALOR</th>
+            <th>CLASS QTDE</th>
+            <th>FLAG</th>
+            <th>CRUZADA</th>
+            <th>ESTRATÉGIA</th>
+          </tr></thead>
+          <tbody id="cls-tbody"></tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- RESUMO EXECUTIVO -->
     <section id="sec-resumo-exec">
       <div id="re-content"><p style="color:var(--text-muted);padding:2rem;">Carregue um arquivo para ver o Resumo Executivo.</p></div>
@@ -1397,48 +1442,46 @@ async function parsePDFToData(file){
   const pdf=await pdfjsLib.getDocument({data:new Uint8Array(ab)}).promise;
   let periodLabel='';
   const rows=[];
+  const seenCods=new Set(); // avoid duplicates from repeated page headers
 
   for(let pn=1;pn<=pdf.numPages;pn++){
     const page=await pdf.getPage(pn);
     const content=await page.getTextContent();
 
-    // Group text items by Y coordinate (5-unit tolerance buckets)
-    const lineMap=new Map();
-    for(const item of content.items){
-      if(!item.str||!item.str.trim())continue;
-      const y=Math.round(item.transform[5]/5)*5;
-      if(!lineMap.has(y))lineMap.set(y,[]);
-      lineMap.get(y).push({x:item.transform[4],text:item.str});
+    // Sort all items top-to-bottom then left-to-right and join as one string
+    // This avoids Y-bucket tolerance issues that caused missed rows
+    const pageText=content.items
+      .filter(i=>i.str&&i.str.trim())
+      .sort((a,b)=>{
+        const dy=b.transform[5]-a.transform[5];
+        if(Math.abs(dy)>2)return dy;
+        return a.transform[4]-b.transform[4];
+      })
+      .map(i=>i.str).join(' ')
+      .replace(/\s+/g,' ');
+
+    // Extract period: "Período : 01/01/26 até 31/01/26"
+    if(!periodLabel){
+      const m=pageText.match(/Per[ií]odo\s*:\s*(\d{2})\/(\d{2})\/(\d{2,4})/i);
+      if(m){
+        const MESES=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+        const mes=parseInt(m[2],10);
+        const yr=m[3].length===2?m[3]:m[3].slice(2);
+        periodLabel=(MESES[mes]||'M'+mes)+'/'+yr;
+      }
     }
 
-    // Process lines top-to-bottom (Y descending = higher on PDF page)
-    const sortedYs=[...lineMap.keys()].sort((a,b)=>b-a);
-    for(const y of sortedYs){
-      const lineText=lineMap.get(y)
-        .sort((a,b)=>a.x-b.x)
-        .map(i=>i.text).join(' ')
-        .replace(/\s+/g,' ').trim();
-
-      // Extract period: "Período : 01/01/26 até 31/01/26"
-      if(!periodLabel){
-        const m=lineText.match(/Per[ií]odo\s*:\s*(\d{2})\/(\d{2})\/(\d{2,4})/i);
-        if(m){
-          const MESES=['','Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-          const mes=parseInt(m[2],10);
-          const yr=m[3].length===2?m[3]:m[3].slice(2);
-          periodLabel=(MESES[mes]||'M'+mes)+'/'+yr;
-        }
-      }
-
-      // Data line: cod.prod description qty vlr_vendas vlr_custo pct_lucro vlr_lucro CLASSE
-      // cod = \d{3}\.\d{3}\.\d{3}  |  classe = [ABC]\d{5}
-      const dm=lineText.match(
-        /^(\d{3}\.\d{3}\.\d{3})\s+(.+?)\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.,]+)\s+(-?[\d.]+,\d{2})\s+([ABC]\d{5})$/
-      );
-      if(dm){
-        const cod=dm[1], desc=dm[2].trim();
-        const qty=parseBRNum(dm[3]);   // Quantidade
-        const fat=parseBRNum(dm[4]);   // Vlr.Vendas
+    // Global search — finds every data row even if text items span different Y positions
+    // Pattern: cod.prod(3.3.3) description qty vlr_vendas vlr_custo pct_lucro vlr_lucro [ABC]#####
+    const dataRe=/(\d{3}\.\d{3}\.\d{3})\s+(.+?)\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.,]+)\s+(-?[\d.]+,\d{2})\s+([ABC]\d{5})/g;
+    let dm;
+    while((dm=dataRe.exec(pageText))!==null){
+      const cod=dm[1];
+      if(seenCods.has(cod))continue; // skip repeated header rows
+      seenCods.add(cod);
+      const desc=dm[2].trim();
+      const qty=parseBRNum(dm[3]);   // Quantidade
+      const fat=parseBRNum(dm[4]);   // Vlr.Vendas
         rows.push({
           [COL.ITEM]:rows.length+1,
           [COL.COD]:cod,
@@ -1942,6 +1985,7 @@ function loadFile(file){
       document.getElementById('file-info-text').textContent=file.name+' · '+RAW.length+' produtos';
       const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
       const tbe=document.getElementById('tab-btn-evolucao');if(tbe)tbe.style.display='inline-block';
+      const tbc=document.getElementById('tab-btn-classes');if(tbc)tbc.style.display='inline-block';
       const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
       updatePeriodo();
       // 1ª chamada: renderiza KPIs, tabela e insights imediatamente
@@ -2826,7 +2870,7 @@ function calcEstrategiaRow(r){
   return'CAUDA';
 }
 
-function toggleFlag(itemNum){
+function toggleRowFlag(itemNum){
   const r=RAW.find(row=>String(row[COL.ITEM])===String(itemNum));
   if(!r)return;
   const cur=String(r[COL.FLAG]||'').trim().toUpperCase();
@@ -2888,7 +2932,7 @@ function renderTable(){
       <td>${classBadge(cls)}</td>
       <td>${classBadge(clsQ)}</td>
       <td>${cz?cruzadaBadge(cz):''}</td>
-      <td class="flag-cell" onclick="toggleFlag(${r[COL.ITEM]})" title="Clique: EXC → LANÇ → Limpar">
+      <td class="flag-cell" onclick="toggleRowFlag(${r[COL.ITEM]})" title="Clique: EXC → LANÇ → Limpar">
         ${flag?flagBadge(flag):'<span class=\"flag-empty\">+ FLAG</span>'}
       </td>
       <td title="${est}">${truncate(est,22)}</td>
@@ -3282,15 +3326,127 @@ function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   const isResumo=tab==='resumo';
   const isEvo=tab==='evolucao';
+  const isClasses=tab==='classes';
   document.getElementById('sec-resumo-exec').style.display=isResumo?'block':'none';
+  document.getElementById('sec-classes').style.display=isClasses?'block':'none';
   const secEvo=document.getElementById('sec-evolucao');
   if(secEvo) secEvo.style.display=isEvo?'flex':'none';
   ALL_ANALYSIS_SECTIONS.filter(id=>id!=='sec-evolucao').forEach(id=>{
     const el=document.getElementById(id);
-    if(el)el.style.display=(isResumo||isEvo)?'none':'';
+    if(el)el.style.display=(isResumo||isEvo||isClasses)?'none':'';
   });
+  if(isClasses) renderClassesTab();
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+
+
+// ====================================================================
+// EDITAR CLASSES TAB
+// ====================================================================
+function clsSelClass(val){
+  val=String(val||'').trim().toUpperCase();
+  if(val==='A')return'sel-a';
+  if(val==='B')return'sel-b';
+  if(val==='C')return'sel-c';
+  return'';
+}
+function clsFlagClass(val){
+  val=String(val||'').trim().toUpperCase();
+  if(val==='EXC')return'sel-exc';
+  if(val==='LANÇ'||val==='LANC')return'sel-lanc';
+  return'';
+}
+function clsCruzada(r){
+  const fl=String(r[COL.FLAG]||'').trim().toUpperCase();
+  const v=String(r[COL.ABC_VAL]||'').trim().toUpperCase();
+  const q=String(r[COL.ABC_QTD]||'').trim().toUpperCase();
+  if(fl==='EXC')return'EXC_'+v;
+  if(fl==='LANÇ'||fl==='LANC')return'LANÇ_'+v;
+  return v+q;
+}
+function clsEstrategia(r){
+  return(typeof calcEstrategiaRow==='function')?calcEstrategiaRow(r):'';
+}
+function renderClassesTab(){
+  const tbody=document.getElementById('cls-tbody');
+  const countEl=document.getElementById('cls-count');
+  if(!tbody||!RAW||!RAW.length){if(tbody)tbody.innerHTML='<tr><td colspan="8" style="color:var(--text-muted);padding:2rem;text-align:center;">Carregue um arquivo para editar as classes.</td></tr>';return;}
+  const q=(document.getElementById('cls-search')||{}).value||'';
+  const qnorm=q.toLowerCase();
+  const rows=RAW.filter(r=>{
+    if(!qnorm)return true;
+    return String(r[COL.COD]||'').toLowerCase().includes(qnorm)||
+           String(r[COL.DESC]||'').toLowerCase().includes(qnorm);
+  });
+  if(countEl)countEl.textContent=rows.length+' / '+RAW.length+' produtos';
+  const ABC_OPTS=['A','B','C'].map(v=>`<option value="${v}">${v}</option>`).join('');
+  const FLAG_OPTS=['','EXC','LANÇ'].map(v=>`<option value="${v}">${v||'—'}</option>`).join('');
+  tbody.innerHTML=rows.map(r=>{
+    const item=r[COL.ITEM];
+    const vv=String(r[COL.ABC_VAL]||'').trim().toUpperCase();
+    const qq=String(r[COL.ABC_QTD]||'').trim().toUpperCase();
+    const ff=String(r[COL.FLAG]||'').trim().toUpperCase();
+    const crz=clsCruzada(r);
+    const est=clsEstrategia(r);
+    return`<tr>
+      <td style="color:var(--text-muted);font-size:.72rem;">${r[COL.ITEM]}</td>
+      <td style="font-family:monospace;font-size:.74rem;">${r[COL.COD]||''}</td>
+      <td class="td-desc" title="${String(r[COL.DESC]||'').replace(/"/g,'&quot;')}">${r[COL.DESC]||''}</td>
+      <td><select class="cls-sel ${clsSelClass(vv)}" onchange="clsChangeVal(${item},this.value)" data-item="${item}" data-field="abcval">
+        ${['A','B','C'].map(o=>`<option value="${o}"${o===vv?' selected':''}>${o}</option>`).join('')}
+      </select></td>
+      <td><select class="cls-sel ${clsSelClass(qq)}" onchange="clsChangeQtd(${item},this.value)" data-item="${item}" data-field="abcqtd">
+        ${['A','B','C'].map(o=>`<option value="${o}"${o===qq?' selected':''}>${o}</option>`).join('')}
+      </select></td>
+      <td><select class="cls-sel ${clsFlagClass(ff)}" onchange="clsChangeFlag(${item},this.value)" data-item="${item}" data-field="flag">
+        ${['','EXC','LANÇ'].map(o=>`<option value="${o}"${o===ff?' selected':''}>${o||'—'}</option>`).join('')}
+      </select></td>
+      <td><span class="cls-badge-auto" id="cls-crz-${item}">${crz}</span></td>
+      <td style="font-size:.72rem;color:var(--text-muted);" id="cls-est-${item}">${est}</td>
+    </tr>`;
+  }).join('');
+}
+function clsUpdateRow(item){
+  const r=RAW.find(row=>String(row[COL.ITEM])===String(item));
+  if(!r)return;
+  r[COL.CRUZADA]=clsCruzada(r);
+  r[COL.ESTRATEGIA]=clsEstrategia(r);
+  const crzEl=document.getElementById('cls-crz-'+item);
+  const estEl=document.getElementById('cls-est-'+item);
+  if(crzEl)crzEl.textContent=r[COL.CRUZADA];
+  if(estEl)estEl.textContent=r[COL.ESTRATEGIA];
+  // update select color
+  const selA=document.querySelector(`.cls-sel[data-item="${item}"][data-field="abcval"]`);
+  const selQ=document.querySelector(`.cls-sel[data-item="${item}"][data-field="abcqtd"]`);
+  const selF=document.querySelector(`.cls-sel[data-item="${item}"][data-field="flag"]`);
+  if(selA){selA.className='cls-sel '+clsSelClass(String(r[COL.ABC_VAL]||''));}
+  if(selQ){selQ.className='cls-sel '+clsSelClass(String(r[COL.ABC_QTD]||''));}
+  if(selF){selF.className='cls-sel '+clsFlagClass(String(r[COL.FLAG]||''));}
+}
+function clsChangeVal(item,val){
+  const r=RAW.find(row=>String(row[COL.ITEM])===String(item));
+  if(!r)return;
+  r[COL.ABC_VAL]=val;
+  clsUpdateRow(item);
+}
+function clsChangeQtd(item,val){
+  const r=RAW.find(row=>String(row[COL.ITEM])===String(item));
+  if(!r)return;
+  r[COL.ABC_QTD]=val;
+  clsUpdateRow(item);
+}
+function clsChangeFlag(item,val){
+  const r=RAW.find(row=>String(row[COL.ITEM])===String(item));
+  if(!r)return;
+  r[COL.FLAG]=val;
+  clsUpdateRow(item);
+}
+function applyClassChanges(){
+  // show tab-btn-classes, switch to analise tab and refresh
+  switchTab('analise');
+  applyFilters();
+  try{const m=computeMetrics();renderCharts(m);}catch(e){}
+}
 
 // ====================================================================
 // EXPORT CSV
