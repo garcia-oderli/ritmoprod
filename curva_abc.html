@@ -659,6 +659,51 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
   .ide-pct-val{font-size:2.5rem!important;}
 }
 
+
+/* ABC AUTO BADGE */
+#abc-auto-badge{display:none;align-items:center;gap:.5rem;background:rgba(255,92,31,.1);border:1px solid rgba(255,92,31,.25);border-radius:6px;padding:.35rem 1rem;font-size:.78rem;color:var(--accent);font-weight:600;margin:0 1.5rem .3rem;}
+#abc-auto-badge.visible{display:flex;}
+
+/* EVOLUCAO / MULTI-PERIODO */
+#sec-evolucao{display:none;flex-direction:column;gap:1.25rem;}
+.periodo-list{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden;}
+.periodo-list-header{display:flex;align-items:center;justify-content:space-between;padding:.65rem 1.1rem;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border);}
+.periodo-list-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);}
+.periodo-items{display:flex;flex-wrap:wrap;gap:.5rem;padding:.85rem 1.1rem;}
+.periodo-chip{display:inline-flex;align-items:center;gap:.4rem;background:rgba(255,92,31,.1);border:1px solid rgba(255,92,31,.25);border-radius:20px;padding:.3rem .75rem;font-size:.8rem;color:var(--accent);font-weight:600;}
+.periodo-chip .chip-remove{cursor:pointer;opacity:.6;font-size:.9rem;transition:opacity .15s;}
+.periodo-chip .chip-remove:hover{opacity:1;}
+.periodo-chip.chip-base{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80;}
+#btn-add-periodo{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:.4rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.4px;transition:background .18s;}
+#btn-add-periodo:hover{background:var(--primary-light);}
+#btn-clear-periodos{background:none;border:1px solid var(--border);border-radius:7px;padding:.4rem .9rem;font-size:.82rem;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .15s;}
+#btn-clear-periodos:hover{border-color:#6b7280;color:var(--text);}
+.evo-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;}
+@media(max-width:900px){.evo-grid{grid-template-columns:1fr;}}
+.evo-chart-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:1rem 1.1rem;box-shadow:var(--shadow);}
+.evo-chart-title{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.75rem;}
+.evo-chart-wrap{position:relative;height:220px;}
+.evo-rank-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.evo-rank-table th{background:rgba(255,255,255,.03);color:var(--text-muted);padding:.4rem .65rem;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);white-space:nowrap;}
+.evo-rank-table td{padding:.4rem .65rem;border-bottom:1px solid rgba(255,255,255,.04);color:var(--text);font-size:.78rem;}
+.evo-rank-table tbody tr:last-child td{border-bottom:none;}
+.evo-rank-table tbody tr:hover{background:rgba(255,92,31,.05);}
+.evo-kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:.85rem;}
+@media(max-width:900px){.evo-kpi-strip{grid-template-columns:repeat(2,1fr);}}
+.evo-kpi{background:var(--card);border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:8px;padding:.85rem 1rem;box-shadow:var(--shadow);}
+.evo-kpi-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:.3rem;}
+.evo-kpi-val{font-size:1.35rem;font-weight:700;color:var(--text);}
+.evo-kpi-sub{font-size:.72rem;color:var(--text-muted);margin-top:.15rem;}
+.evo-class-badge{display:inline-block;padding:.12rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700;}
+.evo-class-badge.A{background:rgba(59,130,246,.18);color:#60a5fa;}
+.evo-class-badge.B{background:rgba(245,158,11,.18);color:#fbbf24;}
+.evo-class-badge.C{background:rgba(34,197,94,.18);color:#4ade80;}
+.evo-class-badge.NEW{background:rgba(34,197,94,.15);color:#4ade80;}
+.evo-class-badge.OUT{background:rgba(220,38,38,.12);color:#f87171;}
+.trend-up{color:#4ade80;font-weight:700;}
+.trend-down{color:#f87171;font-weight:700;}
+.trend-same{color:var(--text-muted);}
+
 /* Scroll to top */
 #btn-scroll-top{position:fixed;bottom:24px;right:24px;width:40px;height:40px;background:var(--accent);color:#fff;border:none;border-radius:50%;font-size:18px;cursor:pointer;opacity:0;pointer-events:none;transform:translateY(8px);transition:opacity .25s,transform .25s;z-index:999;box-shadow:0 4px 12px rgba(255,92,31,.4);font-family:inherit;}
 #btn-scroll-top.visible{opacity:1;pointer-events:auto;transform:translateY(0);}
@@ -771,6 +816,8 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
     <button id="btn-clear-filters">✕ Limpar</button>
   </div>
 
+  <div id="abc-auto-badge">⚡ ABC calculado automaticamente a partir dos dados brutos</div>
+
   <!-- FLAG IMPACT BANNER -->
   <div id="flag-impact-banner">
     <span class="banner-title" id="banner-title">—</span>
@@ -797,6 +844,7 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
   <div id="tab-nav">
     <button class="tab-btn active" data-tab="analise">📊 Análise</button>
     <button class="tab-btn" data-tab="resumo">📋 Resumo Executivo</button>
+    <button class="tab-btn" id="tab-btn-evolucao" data-tab="evolucao" style="display:none;">📈 Evolução Mensal</button>
   </div>
 
   <main>
@@ -1134,7 +1182,90 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
     </section>
   </main>
 
-  </div><!-- end dashboard scroll area -->
+  
+    <!-- EVOLUCAO MENSAL -->
+    <section id="sec-evolucao">
+      <!-- Lista de períodos -->
+      <div class="periodo-list">
+        <div class="periodo-list-header">
+          <span class="periodo-list-title">📅 Períodos Carregados</span>
+          <div style="display:flex;gap:.5rem;">
+            <button id="btn-add-periodo" onclick="document.getElementById('file-input-periodo').click()">+ Adicionar Mês</button>
+            <button id="btn-clear-periodos" onclick="clearPeriodos()">✕ Limpar Todos</button>
+          </div>
+        </div>
+        <div class="periodo-items" id="periodo-items">
+          <span style="color:var(--text-muted);font-size:.82rem;">Adicione arquivos Excel mensais para ver a evolução.</span>
+        </div>
+        <input type="file" id="file-input-periodo" accept=".xlsx,.xls" multiple style="display:none;" />
+      </div>
+
+      <div id="evo-content" style="display:none;flex-direction:column;gap:1.25rem;">
+        <!-- KPIs do último período vs anterior -->
+        <div>
+          <div class="section-title">Último Período vs Anterior</div>
+          <div class="evo-kpi-strip" id="evo-kpi-strip"></div>
+        </div>
+
+        <!-- Gráficos de evolução -->
+        <div>
+          <div class="section-title">Evolução ao Longo do Tempo</div>
+          <div class="evo-grid">
+            <div class="evo-chart-card">
+              <div class="evo-chart-title">Faturamento por Período</div>
+              <div class="evo-chart-wrap"><canvas id="evo-chart-fat"></canvas></div>
+            </div>
+            <div class="evo-chart-card">
+              <div class="evo-chart-title">Ticket Médio por Período</div>
+              <div class="evo-chart-wrap"><canvas id="evo-chart-ticket"></canvas></div>
+            </div>
+            <div class="evo-chart-card">
+              <div class="evo-chart-title">% Faturamento por Classe A / B / C</div>
+              <div class="evo-chart-wrap"><canvas id="evo-chart-classes"></canvas></div>
+            </div>
+            <div class="evo-chart-card">
+              <div class="evo-chart-title">Qtde Produtos por Classe</div>
+              <div class="evo-chart-wrap"><canvas id="evo-chart-qtd-cls"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela: Produtos Champions (sempre Classe A) -->
+        <div>
+          <div class="section-title">🏆 Champions — Sempre Classe A em Todos os Períodos</div>
+          <div class="periodo-list">
+            <div style="overflow-x:auto;max-height:320px;overflow-y:auto;">
+              <table class="evo-rank-table">
+                <thead><tr><th>Cód.</th><th>Produto</th><th>Família</th><th>Fat. Médio/Mês</th><th>Períodos</th></tr></thead>
+                <tbody id="evo-champions-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabela: Movimentação de Classe -->
+        <div>
+          <div class="section-title">🔀 Movimentação de Classe (Último Período)</div>
+          <div class="periodo-list">
+            <div style="overflow-x:auto;max-height:320px;overflow-y:auto;">
+              <table class="evo-rank-table">
+                <thead><tr>
+                  <th>Cód.</th><th>Produto</th>
+                  <th id="evo-move-th-p1">P1</th>
+                  <th></th>
+                  <th id="evo-move-th-p2">P2</th>
+                  <th style="text-align:right">Fat. Atual</th>
+                  <th style="text-align:right">Δ Fat.</th>
+                </tr></thead>
+                <tbody id="evo-moved-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+</div><!-- end dashboard scroll area -->
 <button id="btn-scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Voltar ao topo">↑</button>
   <footer>Dashboard Curva ABC — ritmoprod. &mdash; Análise analítica avançada &mdash; <span id="footer-date"></span><span id="footer-periodo"></span> &mdash; Desenvolvido por <strong>Oderli Garcia</strong></footer>
 </div>
@@ -1176,6 +1307,247 @@ if(typeof Chart !== 'undefined'){
   Chart.defaults.color = '#71717A';
   Chart.defaults.borderColor = '#3F3F46';
   Chart.defaults.font.family = "'Inter',-apple-system,sans-serif";
+}
+
+
+// ====================================================================
+// ABC DINÂMICO
+// ====================================================================
+function needsABCCalc(data){
+  const sample=data.slice(0,10);
+  return !sample.some(r=>{const v=String(r[COL.ABC_VAL]||'').trim().toUpperCase();return v==='A'||v==='B'||v==='C';});
+}
+
+function calcABCDinamico(data){
+  const tFat=sumFat(data), tQtd=sumQtd(data);
+  // Por Valor
+  const bF=[...data].sort((a,b)=>num(b,COL.FAT)-num(a,COL.FAT));
+  let cf=0;
+  bF.forEach(r=>{cf+=num(r,COL.FAT);const p=tFat>0?cf/tFat*100:0;r[COL.ABC_VAL]=p<=80?'A':p<=95?'B':'C';});
+  // Por Qtd
+  const bQ=[...data].sort((a,b)=>num(b,COL.QTD)-num(a,COL.QTD));
+  let cq=0;
+  bQ.forEach(r=>{cq+=num(r,COL.QTD);const p=tQtd>0?cq/tQtd*100:0;r[COL.ABC_QTD]=p<=80?'A':p<=95?'B':'C';});
+  // Cruzada
+  data.forEach(r=>{
+    const v=String(r[COL.ABC_VAL]||'').trim().toUpperCase();
+    const q=String(r[COL.ABC_QTD]||'').trim().toUpperCase();
+    const fl=String(r[COL.FLAG]||'').trim().toUpperCase();
+    if(fl==='EXC') r[COL.CRUZADA]='EXC_'+v;
+    else if(fl==='LANÇ'||fl==='LANC') r[COL.CRUZADA]='LANÇ_'+v;
+    else r[COL.CRUZADA]=v+q;
+    if(tFat>0) r[COL.PCT_FAT]=num(r,COL.FAT)/tFat*100;
+    if(tQtd>0) r[COL.PCT_QTD]=num(r,COL.QTD)/tQtd*100;
+  });
+}
+
+// ====================================================================
+// MULTI-PERÍODO / EVOLUÇÃO MENSAL
+// ====================================================================
+let PERIODOS=[]; // [{label, data:[], fat, qtd, ticket}]
+let evoCharts={};
+
+document.getElementById('file-input-periodo').addEventListener('change',function(e){
+  const files=Array.from(e.target.files);
+  files.forEach(f=>loadPeriodo(f));
+  e.target.value='';
+});
+
+function loadPeriodo(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array',cellFormula:false,cellNF:false,cellText:false});
+      const ws=wb.Sheets['Planilha1'];
+      if(!ws)throw new Error('Sem aba Planilha1');
+      let data=XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});
+      data=data.filter(r=>r[COL.ITEM]!=null&&!isNaN(Number(r[COL.ITEM]))&&r[COL.COD]!=null&&String(r[COL.COD]).trim()!=='');
+      if(!data.length)throw new Error('Sem dados');
+      // Tenta ler período da célula Y1
+      let label='';
+      try{const pcel=ws['Y1'];if(pcel&&pcel.w)label=String(pcel.w).trim();}catch(ex){}
+      if(!label) label=file.name.replace(/\.(xlsx|xls)$/i,'').replace(/_/g,' ');
+      // ABC dinâmico se necessário
+      if(needsABCCalc(data)) calcABCDinamico(data);
+      // Evitar duplicatas (mesmo label)
+      PERIODOS=PERIODOS.filter(p=>p.label!==label);
+      const fat=sumFat(data), qtd=sumQtd(data);
+      PERIODOS.push({label, data, fat, qtd, ticket:qtd>0?fat/qtd:0});
+      // Ordenar por label (ordem cronológica se formato mes/ano)
+      PERIODOS.sort((a,b)=>a.label.localeCompare(b.label));
+      renderPeriodoChips();
+      renderEvolucao();
+    }catch(err){alert('Erro em '+file.name+': '+err.message);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function clearPeriodos(){
+  PERIODOS=[];
+  Object.values(evoCharts).forEach(c=>{try{c.destroy();}catch(e){}});
+  evoCharts={};
+  renderPeriodoChips();
+  document.getElementById('evo-content').style.display='none';
+}
+
+function removePeriodo(label){
+  PERIODOS=PERIODOS.filter(p=>p.label!==label);
+  renderPeriodoChips();
+  renderEvolucao();
+}
+
+function renderPeriodoChips(){
+  const el=document.getElementById('periodo-items');
+  if(!PERIODOS.length){
+    el.innerHTML='<span style="color:var(--text-muted);font-size:.82rem;">Adicione arquivos Excel mensais para ver a evolução.</span>';
+    return;
+  }
+  el.innerHTML=PERIODOS.map((p,i)=>`
+    <span class="periodo-chip${i===0?' chip-base':''}">
+      ${i===0?'📌 ':''}${p.label}
+      <span class="chip-remove" onclick="removePeriodo('${p.label.replace(/'/g,"\\'")}')">✕</span>
+    </span>`).join('');
+}
+
+function destroyEvoChart(id){if(evoCharts[id]){try{evoCharts[id].destroy();}catch(e){}delete evoCharts[id];}}
+
+function renderEvolucao(){
+  if(!PERIODOS.length){
+    document.getElementById('evo-content').style.display='none';
+    return;
+  }
+  document.getElementById('evo-content').style.display='flex';
+  const labels=PERIODOS.map(p=>p.label);
+  const fats=PERIODOS.map(p=>p.fat);
+  const tickets=PERIODOS.map(p=>p.ticket);
+  const n=PERIODOS.length;
+
+  // KPI strip (último vs anterior)
+  const last=PERIODOS[n-1], prev=n>1?PERIODOS[n-2]:null;
+  const kpis=[
+    {l:'Faturamento',v:fmtBRL(last.fat),delta:prev?((last.fat-prev.fat)/prev.fat*100):null,raw:prev?last.fat-prev.fat:null},
+    {l:'Ticket Médio',v:fmtBRL(last.ticket),delta:prev&&prev.ticket>0?((last.ticket-prev.ticket)/prev.ticket*100):null,raw:prev?last.ticket-prev.ticket:null},
+    {l:'Produtos',v:fmtInt(last.data.length),delta:prev?(last.data.length-prev.data.length):null,raw:null},
+    {l:'Períodos',v:n,delta:null,raw:null},
+  ];
+  document.getElementById('evo-kpi-strip').innerHTML=kpis.map(k=>{
+    let dStr='';
+    if(k.delta!==null){
+      const up=k.delta>=0;
+      const cls=up?'trend-up':'trend-down';
+      dStr=`<div class="${cls}">${up?'▲ +':'▼ '}${Math.abs(k.delta).toFixed(1)}%</div>`;
+    }
+    return `<div class="evo-kpi"><div class="evo-kpi-label">${k.l}</div><div class="evo-kpi-val">${k.v}</div>${dStr}</div>`;
+  }).join('');
+
+  // Chart: Faturamento
+  destroyEvoChart('fat');
+  evoCharts['fat']=new Chart(document.getElementById('evo-chart-fat'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Faturamento',data:fats,backgroundColor:'rgba(255,92,31,.7)',borderRadius:4,borderColor:'#FF5C1F',borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtBRL(c.parsed.y)}}},scales:{x:{ticks:{font:{size:9},maxRotation:35}},y:{ticks:{font:{size:9},callback:fmtAxisBRL},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Chart: Ticket
+  destroyEvoChart('ticket');
+  evoCharts['ticket']=new Chart(document.getElementById('evo-chart-ticket'),{
+    type:'line',
+    data:{labels,datasets:[{label:'Ticket Médio',data:tickets,borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.12)',pointRadius:4,pointHoverRadius:6,borderWidth:2,fill:true,tension:.35}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtBRL(c.parsed.y)}}},scales:{x:{ticks:{font:{size:9},maxRotation:35}},y:{ticks:{font:{size:9},callback:fmtAxisBRL},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Chart: % por classe (stacked area)
+  const fatA=PERIODOS.map(p=>{const tF=sumFat(p.data);const a=p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='A');return tF>0?sumFat(a)/tF*100:0;});
+  const fatB=PERIODOS.map(p=>{const tF=sumFat(p.data);const b=p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='B');return tF>0?sumFat(b)/tF*100:0;});
+  const fatC=PERIODOS.map(p=>{const tF=sumFat(p.data);const c=p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='C');return tF>0?sumFat(c)/tF*100:0;});
+  destroyEvoChart('classes');
+  evoCharts['classes']=new Chart(document.getElementById('evo-chart-classes'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'A',data:fatA,borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.15)',fill:true,tension:.35,pointRadius:3},
+      {label:'B',data:fatB,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.12)',fill:true,tension:.35,pointRadius:3},
+      {label:'C',data:fatC,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',fill:true,tension:.35,pointRadius:3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{ticks:{font:{size:9},maxRotation:35}},y:{max:100,ticks:{font:{size:9},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Chart: Qtde por classe
+  const nA=PERIODOS.map(p=>p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='A').length);
+  const nB=PERIODOS.map(p=>p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='B').length);
+  const nC=PERIODOS.map(p=>p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='C').length);
+  destroyEvoChart('qtdcls');
+  evoCharts['qtdcls']=new Chart(document.getElementById('evo-chart-qtd-cls'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'A',data:nA,backgroundColor:'rgba(96,165,250,.8)',borderRadius:2},
+      {label:'B',data:nB,backgroundColor:'rgba(251,191,36,.8)',borderRadius:2},
+      {label:'C',data:nC,backgroundColor:'rgba(74,222,128,.7)',borderRadius:2},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}},scales:{x:{stacked:true,ticks:{font:{size:9},maxRotation:35}},y:{stacked:true,ticks:{font:{size:9}},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Champions: produtos Classe A em TODOS os períodos
+  if(n>=2){
+    const maps=PERIODOS.map(p=>{const m=new Map();p.data.forEach(r=>m.set(String(r[COL.COD]).trim(),r));return m;});
+    const allCods=new Set(maps[0].keys());
+    maps.forEach(m=>{for(const k of allCods)if(!m.has(k))allCods.delete(k);});
+    const champions=[];
+    allCods.forEach(cod=>{
+      const isAlwaysA=maps.every(m=>{const r=m.get(cod);return r&&String(r[COL.ABC_VAL]||'').trim().toUpperCase()==='A';});
+      if(isAlwaysA){
+        const avgFat=PERIODOS.reduce((s,p)=>{const r=maps[PERIODOS.indexOf(p)].get(cod);return s+(r?num(r,COL.FAT):0);},0)/n;
+        const r0=maps[0].get(cod);
+        champions.push({cod,desc:String(r0[COL.DESC]||''),familia:String(r0[COL.COD]||'').split('.')[0],avgFat});
+      }
+    });
+    champions.sort((a,b)=>b.avgFat-a.avgFat);
+    const chBody=document.getElementById('evo-champions-body');
+    chBody.innerHTML=champions.length?champions.slice(0,20).map(c=>`
+      <tr>
+        <td style="font-family:monospace;font-size:.73rem;">${c.cod}</td>
+        <td title="${c.desc}">${c.desc.substring(0,35)}${c.desc.length>35?'…':''}</td>
+        <td style="color:var(--text-muted);font-size:.75rem;">${c.familia}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${fmtBRL(c.avgFat)}</td>
+        <td style="text-align:center;"><span style="background:rgba(255,92,31,.15);color:var(--accent);padding:.12rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700;">${n}/${n}</span></td>
+      </tr>`).join('')
+      :`<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhum produto foi Classe A em todos os períodos.</td></tr>`;
+    
+    // Movimentação: último vs penúltimo
+    const lastMap=maps[n-1], prevMap=maps[n-2];
+    const lastPeriod=PERIODOS[n-1], prevPeriod=PERIODOS[n-2];
+    document.getElementById('evo-move-th-p1').textContent=prevPeriod.label;
+    document.getElementById('evo-move-th-p2').textContent=lastPeriod.label;
+    const moved=[];
+    lastMap.forEach((r2,cod)=>{
+      const r1=prevMap.get(cod);
+      if(!r1)return;
+      const c1=String(r1[COL.ABC_VAL]||'').trim().toUpperCase();
+      const c2=String(r2[COL.ABC_VAL]||'').trim().toUpperCase();
+      if(c1&&c2&&c1!==c2){
+        const imp=(c1==='B'&&c2==='A')||(c1==='C'&&c2==='A')||(c1==='C'&&c2==='B');
+        moved.push({cod,desc:String(r2[COL.DESC]||''),c1,c2,fat2:num(r2,COL.FAT),dFat:num(r2,COL.FAT)-num(r1,COL.FAT),imp});
+      }
+    });
+    moved.sort((a,b)=>b.fat2-a.fat2);
+    const mvBody=document.getElementById('evo-moved-body');
+    mvBody.innerHTML=moved.length?moved.map(m=>{
+      const arrow=m.imp?'<span class="trend-up">↑</span>':'<span class="trend-down">↓</span>';
+      const dStr=m.dFat>=0?`<span class="trend-up">+${fmtBRL(m.dFat)}</span>`:`<span class="trend-down">${fmtBRL(m.dFat)}</span>`;
+      return `<tr>
+        <td style="font-family:monospace;font-size:.73rem;">${m.cod}</td>
+        <td title="${m.desc}">${m.desc.substring(0,32)}${m.desc.length>32?'…':''}</td>
+        <td style="text-align:center;"><span class="evo-class-badge ${m.c1}">${m.c1}</span></td>
+        <td style="text-align:center;">${arrow}</td>
+        <td style="text-align:center;"><span class="evo-class-badge ${m.c2}">${m.c2}</span></td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${fmtBRL(m.fat2)}</td>
+        <td style="text-align:right;">${dStr}</td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhum produto mudou de classe.</td></tr>`;
+  } else {
+    document.getElementById('evo-champions-body').innerHTML='<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">Adicione ao menos 2 períodos.</td></tr>';
+    document.getElementById('evo-moved-body').innerHTML='<tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--text-muted);">Adicione ao menos 2 períodos.</td></tr>';
+  }
 }
 
 // ====================================================================
@@ -1309,6 +1681,12 @@ function loadFile(file){
         NUM_COLS.forEach(c=>{const v=r[c];if(typeof v==='string'&&FORMULA_RE.test(v))r[c]=0;});
       });
       RAW=cleaned;
+      if(needsABCCalc(RAW)){
+        calcABCDinamico(RAW);
+        const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
+      } else {
+        const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.remove('visible');
+      }
       computeAcum();
       populateFamiliaFilter();
 
@@ -1323,6 +1701,7 @@ function loadFile(file){
       document.getElementById('file-info-text').style.display='block';
       document.getElementById('file-info-text').textContent=file.name+' · '+RAW.length+' produtos';
       const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
+      const tbe=document.getElementById('tab-btn-evolucao');if(tbe)tbe.style.display='inline-block';
       const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
       updatePeriodo();
       // 1ª chamada: renderiza KPIs, tabela e insights imediatamente
@@ -1411,6 +1790,8 @@ function resetAll(){
   dashboardEl.style.display='none';
   importScreen.style.display='flex';
   const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='none';
+  const tbe2=document.getElementById('tab-btn-evolucao');if(tbe2)tbe2.style.display='none';
+  clearPeriodos();
   const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='none';
   const fi=document.getElementById('file-info-text');if(fi){fi.style.display='none';fi.textContent='';}
   fileInput.click();
@@ -2575,12 +2956,18 @@ ${src.innerHTML}
 // ====================================================================
 // TAB SWITCHING
 // ====================================================================
-const ALL_ANALYSIS_SECTIONS=['sec-kpis','sec-ticket-compare','sec-compensacao','sec-ide','sec-summary','sec-charts','sec-insights','sec-table'];
+const ALL_ANALYSIS_SECTIONS=['sec-kpis','sec-ticket-compare','sec-compensacao','sec-ide','sec-summary','sec-charts','sec-insights','sec-table','sec-evolucao'];
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
   const isResumo=tab==='resumo';
+  const isEvo=tab==='evolucao';
   document.getElementById('sec-resumo-exec').style.display=isResumo?'block':'none';
-  ALL_ANALYSIS_SECTIONS.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=isResumo?'none':'';});
+  const secEvo=document.getElementById('sec-evolucao');
+  if(secEvo) secEvo.style.display=isEvo?'flex':'none';
+  ALL_ANALYSIS_SECTIONS.filter(id=>id!=='sec-evolucao').forEach(id=>{
+    const el=document.getElementById(id);
+    if(el)el.style.display=(isResumo||isEvo)?'none':'';
+  });
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
 
