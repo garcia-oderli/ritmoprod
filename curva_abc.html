@@ -1500,7 +1500,11 @@ function loadPeriodo(file){
       const fat=sumFat(data), qtd=sumQtd(data);
       PERIODOS.push({label, data, fat, qtd, ticket:qtd>0?fat/qtd:0});
       // Ordenar por label (ordem cronológica se formato mes/ano)
-      PERIODOS.sort((a,b)=>a.label.localeCompare(b.label));
+      PERIODOS.sort((a,b)=>{
+    const M={JAN:1,FEV:2,MAR:3,ABR:4,MAI:5,JUN:6,JUL:7,AGO:8,SET:9,OUT:10,NOV:11,DEZ:12};
+    const p=l=>{const m=String(l).match(/^([A-Za-z]+)\/(\d+)$/);return m?(+m[2]*100+(M[m[1].toUpperCase().slice(0,3)]||0)):0;};
+    return p(a.label)-p(b.label);
+  });
       renderPeriodoChips();
       renderEvolucao();
     }catch(err){alert('Erro em '+file.name+': '+err.message);}
@@ -1516,7 +1520,11 @@ async function loadPeriodoPDF(file){
     PERIODOS=PERIODOS.filter(p=>p.label!==label);
     const fat=sumFat(rows),qtd=sumQtd(rows);
     PERIODOS.push({label,data:rows,fat,qtd,ticket:qtd>0?fat/qtd:0});
-    PERIODOS.sort((a,b)=>a.label.localeCompare(b.label));
+    PERIODOS.sort((a,b)=>{
+    const M={JAN:1,FEV:2,MAR:3,ABR:4,MAI:5,JUN:6,JUL:7,AGO:8,SET:9,OUT:10,NOV:11,DEZ:12};
+    const p=l=>{const m=String(l).match(/^([A-Za-z]+)\/(\d+)$/);return m?(+m[2]*100+(M[m[1].toUpperCase().slice(0,3)]||0)):0;};
+    return p(a.label)-p(b.label);
+  });
     renderPeriodoChips();
     renderEvolucao();
     const tbe=document.getElementById('tab-btn-evolucao');
