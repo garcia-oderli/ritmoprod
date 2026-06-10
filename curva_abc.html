@@ -710,6 +710,9 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
 .periodo-chip.chip-base{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80;}
 #btn-add-periodo{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:.4rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.4px;transition:background .18s;}
 #btn-add-periodo:hover{background:var(--primary-light);}
+#btn-consolidar{background:rgba(34,197,94,.15);color:#4ade80;border:1.5px solid rgba(34,197,94,.35);border-radius:7px;padding:.4rem 1rem;font-size:.82rem;font-weight:700;cursor:pointer;font-family:inherit;text-transform:uppercase;letter-spacing:.4px;transition:all .18s;}
+#btn-consolidar:hover{background:rgba(34,197,94,.28);border-color:#4ade80;}
+#btn-consolidar:disabled{opacity:.4;cursor:not-allowed;}
 #btn-clear-periodos{background:none;border:1px solid var(--border);border-radius:7px;padding:.4rem .9rem;font-size:.82rem;color:var(--text-muted);cursor:pointer;font-family:inherit;transition:all .15s;}
 #btn-clear-periodos:hover{border-color:#6b7280;color:var(--text);}
 .evo-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem;}
@@ -1225,6 +1228,7 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
           <span class="periodo-list-title">📅 Períodos Carregados</span>
           <div style="display:flex;gap:.5rem;">
             <button id="btn-add-periodo" onclick="document.getElementById('file-input-periodo').click()">+ Adicionar Mês</button>
+            <button id="btn-consolidar" onclick="consolidarPeriodos()" title="Soma todos os meses carregados e abre análise ABC consolidada" disabled>📊 Ver Consolidado</button>
             <button id="btn-clear-periodos" onclick="clearPeriodos()">✕ Limpar Todos</button>
           </div>
         </div>
@@ -1516,6 +1520,93 @@ async function loadPeriodoPDF(file){
   }catch(err){alert('Erro no PDF '+file.name+':\n'+err.message);}
 }
 
+
+// ====================================================================
+// CONSOLIDAR PERÍODOS — Análise unificada (90 dias ou N meses)
+// ====================================================================
+function consolidarPeriodos(){
+  if(!PERIODOS.length){alert('Adicione pelo menos 1 período para consolidar.');return;}
+
+  // Aggregate by product code (sum QTD + FAT across all periods)
+  const map=new Map(); // cod → {desc, qtd, fat}
+  for(const periodo of PERIODOS){
+    for(const r of periodo.data){
+      const cod=String(r[COL.COD]||'').trim();
+      if(!cod)continue;
+      const qtd=num(r,COL.QTD), fat=num(r,COL.FAT);
+      if(map.has(cod)){
+        const e=map.get(cod);
+        e.qtd+=qtd;
+        e.fat+=fat;
+      } else {
+        map.set(cod,{desc:String(r[COL.DESC]||'').trim(),qtd,fat});
+      }
+    }
+  }
+
+  if(!map.size){alert('Nenhum produto encontrado nos períodos carregados.');return;}
+
+  // Build unified row array
+  const rows=[];
+  let seq=1;
+  for(const [cod,e] of map){
+    rows.push({
+      [COL.ITEM]:seq++,
+      [COL.COD]:cod,
+      [COL.DESC]:e.desc,
+      [COL.QTD]:e.qtd,
+      [COL.QTD_MES]:PERIODOS.length>0?e.qtd/PERIODOS.length:0,
+      [COL.FAT]:e.fat,
+      [COL.FAT_MES]:PERIODOS.length>0?e.fat/PERIODOS.length:0,
+      [COL.TICKET]:e.qtd>0?e.fat/e.qtd:0,
+      [COL.ABC_VAL]:'',
+      [COL.ABC_QTD]:'',
+      [COL.CRUZADA]:'',
+      [COL.ESTRATEGIA]:'',
+      [COL.FLAG]:'',
+    });
+  }
+
+  // Recalculate ABC (by highest value + highest qty) and Cruzada
+  calcABCDinamico(rows);
+
+  // Set as main analysis
+  RAW=rows;
+  computeAcum();
+  populateFamiliaFilter();
+
+  // Labels: "Jan/26 + Fev/26 + Mar/26"
+  const labels=PERIODOS.map(p=>p.label).join(' + ');
+  const pi=document.getElementById('f-periodo');if(pi)pi.value=labels;
+  const infoEl=document.getElementById('file-info-text');
+  if(infoEl){infoEl.style.display='block';infoEl.textContent='Consolidado: '+labels+' · '+RAW.length+' produtos';}
+  const fd=document.getElementById('footer-date');
+  if(fd){const now=new Date();fd.textContent=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+
+  // Show ABC auto badge
+  const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
+
+  // Switch to main dashboard
+  importScreen.style.display='none';
+  dashboardEl.style.display='flex';
+  const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
+  const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
+
+  // Switch to portfolio tab
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.tab==='portfolio');
+  });
+  document.querySelectorAll('.tab-pane').forEach(pane=>{
+    pane.style.display=(pane.id==='tab-portfolio')?'block':'none';
+  });
+
+  updatePeriodo();
+  applyFilters();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    try{const m=computeMetrics();renderCharts(m);}catch(e){console.warn('[charts]',e);}
+  }));
+}
+
 function clearPeriodos(){
   PERIODOS=[];
   Object.values(evoCharts).forEach(c=>{try{c.destroy();}catch(e){}});
@@ -1534,8 +1625,10 @@ function renderPeriodoChips(){
   const el=document.getElementById('periodo-items');
   if(!PERIODOS.length){
     el.innerHTML='<span style="color:var(--text-muted);font-size:.82rem;">Adicione arquivos Excel (.xlsx) ou PDF (Módulo Gerencial) mensais para ver a evolução.</span>';
+    const cbtnE=document.getElementById('btn-consolidar');if(cbtnE)cbtnE.disabled=true;
     return;
   }
+  const cbtn=document.getElementById('btn-consolidar');if(cbtn)cbtn.disabled=false;
   el.innerHTML=PERIODOS.map((p,i)=>`
     <span class="periodo-chip${i===0?' chip-base':''}">
       ${i===0?'📌 ':''}${p.label}
