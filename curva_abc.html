@@ -1469,11 +1469,11 @@ function calcABCDinamico(data){
   // Por Valor
   const bF=[...data].sort((a,b)=>num(b,COL.FAT)-num(a,COL.FAT));
   let cf=0;
-  bF.forEach(r=>{cf+=num(r,COL.FAT);const p=tFat>0?cf/tFat*100:0;r[COL.ABC_VAL]=p<=80?'A':p<=95?'B':'C';});
+  bF.forEach(r=>{const prev=tFat>0?cf/tFat*100:0;cf+=num(r,COL.FAT);r[COL.ABC_VAL]=prev<80?'A':prev<95?'B':'C';});
   // Por Qtd
   const bQ=[...data].sort((a,b)=>num(b,COL.QTD)-num(a,COL.QTD));
   let cq=0;
-  bQ.forEach(r=>{cq+=num(r,COL.QTD);const p=tQtd>0?cq/tQtd*100:0;r[COL.ABC_QTD]=p<=80?'A':p<=95?'B':'C';});
+  bQ.forEach(r=>{const prev=tQtd>0?cq/tQtd*100:0;cq+=num(r,COL.QTD);r[COL.ABC_QTD]=prev<80?'A':prev<95?'B':'C';});
   // Cruzada
   data.forEach(r=>{
     const v=String(r[COL.ABC_VAL]||'').trim().toUpperCase();
@@ -1527,7 +1527,7 @@ async function parsePDFToData(file){
       }
     }
 
-    const dataRe=/(\d{3}\.\d{3}\.\d{3})\s+(.+?)\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.,]+)\s+(-?[\d.]+,\d{2})\s+([ABC]\d{5})/g;
+    const dataRe=/(\d{3}\.\d{3}\.\d{3})\s+(.+?)\s+(-?[\d.,]+)\s+(-?[\d.]+,\d{2})\s+(-?[\d.]+,\d{2})\s+(-?[\d.,]+)\s+(-?[\d.]+,\d{2})\s+([ABC]\d{5})/g;
     let dm;
     while((dm=dataRe.exec(pageText))!==null){
       const cod=dm[1];
@@ -2924,6 +2924,9 @@ function calcEstrategiaRow(r){
   if(cz==='BA')return'ATENÇÃO';
   if(cz==='BB')return'EQUILÍBRIO';
   if(cz==='BC')return'ATENÇÃO';
+  if(cz==='CA')return'ALTO GIRO';
+  if(cz==='CB')return'CAUDA';
+  if(cz==='CC')return'CAUDA';
   return'CAUDA';
 }
 
@@ -3606,7 +3609,7 @@ function renderMovTab(){
 
   const fmt=v=>v==null||v===0?'—':'R$ '+v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
   const fmtDelta=(a,b)=>{
-    if(!a||!b||a===0)return'—';
+    if(!a||a===0)return'—';
     const d=(b-a)/a*100;
     const s=d>=0?'+':'';
     const color=d>0?'#4ade80':d<0?'#f87171':'var(--text-muted)';
