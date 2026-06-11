@@ -107,8 +107,27 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,s
 #import-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem;gap:1.5rem;background:linear-gradient(135deg,#0A0A0B 0%,#18181B 60%,#111111 100%);}
 #import-screen .logo{font-size:5rem;line-height:1;user-select:none;}
 #import-screen h1{font-size:2rem;font-weight:700;color:var(--accent);text-align:center;}
-#import-screen p.sub{color:var(--text-muted);font-size:1rem;text-align:center;max-width:480px;opacity:.85;}
-#drop-zone{border:2.5px dashed var(--accent);border-radius:8px;width:100%;max-width:520px;padding:3rem 2rem;display:flex;flex-direction:column;align-items:center;gap:1rem;cursor:pointer;background:rgba(255,255,255,.04);transition:background .2s,border-color .2s;animation:pulse-border 2s ease-in-out infinite;}
+#import-screen p.sub{color:var(--text-muted);font-size:1rem;text-align:center;max-width:520px;opacity:.85;}
+.gs-card{background:var(--surface2,#222226);border:1px solid var(--border);border-radius:12px;padding:1.6rem 1.8rem;width:100%;max-width:520px;display:flex;flex-direction:column;gap:1rem;}
+.gs-card label{font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+.gs-url-wrap{display:flex;gap:.5rem;}
+.gs-url-wrap input{flex:1;background:var(--bg,#0A0A0B);border:1.5px solid var(--border);border-radius:7px;color:var(--text);padding:.55rem .85rem;font-size:.88rem;font-family:inherit;transition:border-color .15s;}
+.gs-url-wrap input:focus{outline:none;border-color:var(--accent);}
+.gs-url-wrap input::placeholder{color:var(--text-muted);}
+#btn-gs-load{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:.55rem 1.2rem;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s;}
+#btn-gs-load:hover{opacity:.85;}
+#btn-gs-load:disabled{opacity:.45;cursor:not-allowed;}
+.gs-apikey-row{display:flex;align-items:center;gap:.6rem;cursor:pointer;}
+.gs-apikey-row span{font-size:.78rem;color:var(--text-muted);}
+.gs-apikey-row .gs-key-lbl{font-size:.78rem;font-weight:600;color:var(--accent);}
+#gs-apikey-panel{display:none;flex-direction:column;gap:.4rem;}
+#gs-apikey-panel input{background:var(--bg,#0A0A0B);border:1.5px solid var(--border);border-radius:7px;color:var(--text);padding:.45rem .85rem;font-size:.82rem;font-family:inherit;width:100%;}
+#gs-apikey-panel input:focus{outline:none;border-color:var(--accent);}
+#gs-apikey-panel small{font-size:.72rem;color:var(--text-muted);}
+#gs-progress{display:none;flex-direction:column;align-items:center;gap:.5rem;}
+#gs-progress .gs-spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
+#gs-progress span{font-size:.82rem;color:var(--text-muted);}
+#drop-zone{display:none;}
 @keyframes pulse-border{0%,100%{border-color:var(--accent);box-shadow:0 0 0 0 rgba(66,165,245,.2);}50%{border-color:#1a237e;box-shadow:0 0 0 8px rgba(66,165,245,0);}}
 #drop-zone.drag-over{background:rgba(255,92,31,.08);border-color:var(--accent);animation:none;}
 #drop-zone .drop-icon{font-size:3rem;}
@@ -652,7 +671,7 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
 @media(max-width:768px){
   #import-screen{padding:1.5rem 1rem;gap:1rem;}
   #import-screen h1{font-size:1.5rem;}
-  #drop-zone{padding:2rem 1.5rem;}
+  .gs-card{padding:1.2rem 1.1rem;}
   header{padding:.65rem 1rem;gap:.5rem;}
   .header-logo{font-size:1.3rem;}
   .header-left h2{font-size:.95rem;}
@@ -701,7 +720,7 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
   #import-screen .logo{font-size:3.5rem;}
   #import-screen h1{font-size:1.25rem;}
   #import-screen p.sub{font-size:.88rem;}
-  #drop-zone{padding:1.5rem 1rem;}
+  .gs-url-wrap{flex-direction:column;}
   header{padding:.55rem .75rem;}
   .header-logo{font-size:1.1rem;}
   .header-left h2{font-size:.82rem;}
@@ -809,14 +828,32 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
 <div id="import-screen">
   <div class="logo">📊</div>
   <h1>Dashboard Curva ABC</h1>
-  <p class="sub">Importe sua planilha Excel para visualizar análises avançadas de Curva ABC com insights automáticos, gráficos interativos e Pareto.</p>
-  <div id="drop-zone">
-    <div class="drop-icon">📂</div>
-    <p><strong>Arraste e solte</strong> arquivo <strong>.xlsx</strong> ou <strong>.pdf</strong> (Módulo Gerencial) aqui<br>ou clique no botão abaixo</p>
-    <button id="btn-select">Selecionar Arquivo</button>
+  <p class="sub">Cole o link da planilha do Google Sheets. Cada aba = um mês — o dashboard calcula a curva ABC automaticamente.</p>
+
+  <div class="gs-card">
+    <label>Link da Planilha</label>
+    <div class="gs-url-wrap">
+      <input id="gs-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." autocomplete="off" spellcheck="false" />
+      <button id="btn-gs-load" onclick="iniciarCargaSheets()">▶ Carregar</button>
+    </div>
+
+    <div class="gs-apikey-row" onclick="toggleApiKeyPanel()">
+      <span class="gs-key-lbl">🔑 API Key</span>
+      <span id="gs-key-status">clique para configurar</span>
+    </div>
+    <div id="gs-apikey-panel">
+      <input id="gs-apikey" type="password" placeholder="Google Sheets API Key" autocomplete="off" oninput="salvarApiKey(this.value)" />
+      <small>Salva no navegador (localStorage) — nunca enviada a servidor</small>
+    </div>
   </div>
-  <p id="import-error">❌ Erro ao ler o arquivo. Aceita .xlsx (aba Planilha1) ou .pdf (Curva ABC Módulo Gerencial).</p>
-  <input type="file" id="file-input" accept=".xlsx,.xls,.pdf" />
+
+  <div id="gs-progress">
+    <div class="gs-spinner"></div>
+    <span id="gs-status-text">Lendo abas...</span>
+  </div>
+
+  <p id="import-error" style="display:none;color:#f87171;font-size:.85rem;max-width:500px;text-align:center;"></p>
+  <div id="drop-zone"></div>
 </div>
 
 <!-- DASHBOARD -->
@@ -1335,15 +1372,14 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
         <div class="periodo-list-header">
           <span class="periodo-list-title">📅 Períodos Carregados</span>
           <div style="display:flex;gap:.5rem;">
-            <button id="btn-add-periodo" onclick="document.getElementById('file-input-periodo').click()">+ Adicionar Mês</button>
+            <button id="btn-recarregar" onclick="recarregarSheets()" title="Reler a planilha do Google Sheets">↺ Atualizar</button>
             <button id="btn-consolidar" onclick="consolidarPeriodos()" title="Soma todos os meses carregados e abre análise ABC consolidada" disabled>📊 Ver Consolidado</button>
             <button id="btn-clear-periodos" onclick="clearPeriodos()">✕ Limpar Todos</button>
           </div>
         </div>
         <div class="periodo-items" id="periodo-items">
-          <span style="color:var(--text-muted);font-size:.82rem;">Adicione arquivos Excel (.xlsx) ou PDF (Módulo Gerencial) mensais para ver a evolução.</span>
+          <span style="color:var(--text-muted);font-size:.82rem;">Carregue uma planilha do Google Sheets para ver a evolução mensal.</span>
         </div>
-        <input type="file" id="file-input-periodo" accept=".xlsx,.xls,.pdf" multiple style="display:none;" />
       </div>
 
       <div id="evo-content" style="display:none;flex-direction:column;gap:1.25rem;">
@@ -1567,11 +1603,8 @@ async function parsePDFToData(file){
 let PERIODOS=[]; // [{label, data:[], fat, qtd, ticket}]
 let evoCharts={};
 
-document.getElementById('file-input-periodo').addEventListener('change',function(e){
-  const files=Array.from(e.target.files);
-  files.forEach(f=>loadPeriodo(f));
-  e.target.value='';
-});
+// file-input-periodo removed (Google Sheets integration)
+
 
 function loadPeriodo(file){
   if(/\.pdf$/i.test(file.name)){loadPeriodoPDF(file);return;}
@@ -1971,24 +2004,193 @@ const CRUZADA_COLORS={
 
 
 // ====================================================================
-// IMPORT
+// IMPORT — Google Sheets
 // ====================================================================
 const importScreen=document.getElementById('import-screen');
 const dashboardEl=document.getElementById('dashboard');
-const dropZone=document.getElementById('drop-zone');
-const fileInput=document.getElementById('file-input');
 const importError=document.getElementById('import-error');
-
-document.getElementById('btn-select').addEventListener('click',(e)=>{e.stopPropagation();fileInput.click();});
-fileInput.addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
-dropZone.addEventListener('dragover',e=>{e.preventDefault();dropZone.classList.add('drag-over');});
-dropZone.addEventListener('dragleave',()=>dropZone.classList.remove('drag-over'));
-dropZone.addEventListener('drop',e=>{
-  e.preventDefault();dropZone.classList.remove('drag-over');
-  if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);
-});
-dropZone.addEventListener('click',e=>{if(e.target!==document.getElementById('btn-select'))fileInput.click();});
 document.getElementById('btn-trocar').addEventListener('click',resetAll);
+
+// ── API Key (localStorage) ────────────────────────────────────────────────
+let _gsApiKey=localStorage.getItem('gs_api_key')||'';
+(function initApiKeyUI(){
+  const inp=document.getElementById('gs-apikey');
+  const st=document.getElementById('gs-key-status');
+  if(_gsApiKey){inp.value=_gsApiKey;if(st)st.textContent='configurada ✓';}
+})();
+function salvarApiKey(v){
+  _gsApiKey=v.trim();
+  localStorage.setItem('gs_api_key',_gsApiKey);
+  const st=document.getElementById('gs-key-status');
+  if(st)st.textContent=_gsApiKey?'configurada ✓':'clique para configurar';
+}
+function toggleApiKeyPanel(){
+  const p=document.getElementById('gs-apikey-panel');
+  p.style.display=p.style.display==='flex'?'none':'flex';
+}
+
+// ── Extract spreadsheet ID ────────────────────────────────────────────────
+function extrairSheetId(url){
+  const m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m?m[1]:null;
+}
+
+// ── Auto-detect column by header keywords ────────────────────────────────
+function detectCol(headers,terms){
+  const idx=headers.findIndex(h=>terms.some(t=>String(h||'').toLowerCase().includes(t.toLowerCase())));
+  return idx>=0?idx:-1;
+}
+
+// ── Parse rows from sheet values array ───────────────────────────────────
+function parseSheetRows(values){
+  if(!values||values.length<2)return[];
+  const headers=values[0].map(h=>String(h||'').trim());
+  const colCod=detectCol(headers,['cod','code','código']);
+  const colDesc=detectCol(headers,['desc','produto','nome','product','item']);
+  const colQtd=detectCol(headers,['qtd','quantidade','qty','quant','unid']);
+  const colFat=detectCol(headers,['valor','venda','fat','vlr','receita','revenue','total']);
+  const colFlag=detectCol(headers,['flag']);
+  if(colCod<0||colQtd<0||colFat<0)return[];
+  const rows=[];
+  for(const row of values.slice(1)){
+    const cod=String(row[colCod]||'').trim();
+    if(!cod||cod.toLowerCase()==='total'||cod.toLowerCase()==='subtotal')continue;
+    const qtd=parseBRNum(row[colQtd]);
+    const fat=parseBRNum(row[colFat]);
+    if(qtd===0&&fat===0)continue;
+    const desc=colDesc>=0?String(row[colDesc]||'').trim():'';
+    const flag=colFlag>=0?String(row[colFlag]||'').trim():'';
+    rows.push({
+      [COL.ITEM]:rows.length+1,
+      [COL.COD]:cod,
+      [COL.DESC]:desc,
+      [COL.QTD]:qtd,
+      [COL.QTD_MES]:0,
+      [COL.FAT]:fat,
+      [COL.FAT_MES]:0,
+      [COL.TICKET]:qtd>0?fat/qtd:0,
+      [COL.ABC_VAL]:'',
+      [COL.ABC_QTD]:'',
+      [COL.CRUZADA]:'',
+      [COL.ESTRATEGIA]:'',
+      [COL.FLAG]:flag,
+    });
+  }
+  return rows;
+}
+
+// ── Sort PERIODOS chronologically ────────────────────────────────────────
+function sortPeriodosChron(){
+  const M={JAN:1,FEV:2,MAR:3,ABR:4,MAI:5,JUN:6,JUL:7,AGO:8,SET:9,OUT:10,NOV:11,DEZ:12};
+  const key=l=>{const m=String(l||'').match(/^([A-Za-z]+)[\s\/\-](\d{2,4})$/);return m?(+m[2]*100+(M[m[1].toUpperCase().slice(0,3)]||0)):0;};
+  PERIODOS.sort((a,b)=>key(a.label)-key(b.label));
+}
+
+// ── Core Google Sheets loader ─────────────────────────────────────────────
+let _lastSheetId='';
+async function carregarDoSheets(sheetId,apiKey){
+  const base='https://sheets.googleapis.com/v4/spreadsheets';
+  // 1. Get list of sheets
+  const metaRes=await fetch(`${base}/${sheetId}?key=${encodeURIComponent(apiKey)}&fields=sheets.properties`);
+  if(!metaRes.ok){
+    const e=await metaRes.json().catch(()=>({}));
+    throw new Error((e.error&&e.error.message)||`Erro ${metaRes.status}: verifique a API Key e o acesso à planilha`);
+  }
+  const meta=await metaRes.json();
+  const sheetNames=(meta.sheets||[]).map(s=>s.properties.title);
+  if(!sheetNames.length)throw new Error('Nenhuma aba encontrada na planilha');
+
+  const progEl=document.getElementById('gs-status-text');
+
+  PERIODOS=[];
+  for(let i=0;i<sheetNames.length;i++){
+    const name=sheetNames[i];
+    if(progEl)progEl.textContent=`Lendo aba ${i+1}/${sheetNames.length}: ${name}`;
+    const dataRes=await fetch(`${base}/${sheetId}/values/${encodeURIComponent(name)}?key=${encodeURIComponent(apiKey)}`);
+    if(!dataRes.ok)continue;
+    const data=await dataRes.json();
+    const rows=parseSheetRows(data.values||[]);
+    if(!rows.length)continue;
+    calcABCDinamico(rows);
+    PERIODOS.push({
+      label:name,
+      data:rows,
+      fat:sumFat(rows),
+      qtd:sumQtd(rows),
+      ticket:sumQtd(rows)>0?sumFat(rows)/sumQtd(rows):0,
+    });
+  }
+  if(!PERIODOS.length)throw new Error('Nenhuma aba com dados reconhecidos. Verifique que as colunas têm cabeçalhos: Cod, Descrição, Qtd, Valor');
+  sortPeriodosChron();
+}
+
+// ── Public entry point (button click) ────────────────────────────────────
+async function iniciarCargaSheets(){
+  const url=(document.getElementById('gs-url').value||'').trim();
+  if(!url){showImportError('Cole o link da planilha do Google Sheets');return;}
+  const sheetId=extrairSheetId(url);
+  if(!sheetId){showImportError('Link inválido. Use o link completo da planilha: https://docs.google.com/spreadsheets/d/...');return;}
+  if(!_gsApiKey){showImportError('Configure a API Key do Google Sheets (clique em 🔑 API Key)');return;}
+
+  const btn=document.getElementById('btn-gs-load');
+  const prog=document.getElementById('gs-progress');
+  btn.disabled=true;
+  prog.style.display='flex';
+  importError.style.display='none';
+
+  try{
+    await carregarDoSheets(sheetId,_gsApiKey);
+    _lastSheetId=sheetId;
+    localStorage.setItem('gs_last_url',document.getElementById('gs-url').value);
+    finalizarCargaSheets();
+  }catch(err){
+    showImportError(err.message);
+  }finally{
+    btn.disabled=false;
+    prog.style.display='none';
+  }
+}
+
+function recarregarSheets(){
+  if(!_lastSheetId&&!_gsApiKey)return;
+  if(!_lastSheetId){const saved=localStorage.getItem('gs_last_url')||'';document.getElementById('gs-url').value=saved;}
+  iniciarCargaSheets();
+}
+
+function showImportError(msg){
+  importError.textContent='❌ '+msg;
+  importError.style.display='block';
+}
+
+// ── After successful load: show dashboard ────────────────────────────────
+function finalizarCargaSheets(){
+  // Use last period as main RAW; user can consolidate later
+  const ultimo=PERIODOS[PERIODOS.length-1];
+  RAW=ultimo.data;
+  const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
+  computeAcum();
+  populateFamiliaFilter();
+  const pi=document.getElementById('f-periodo');if(pi)pi.value=ultimo.label;
+  const now=new Date();
+  const infoEl=document.getElementById('file-info-text');
+  if(infoEl){infoEl.style.display='block';infoEl.textContent=PERIODOS.length+' períodos carregados · '+RAW.length+' produtos (último: '+ultimo.label+')';}
+  const fd=document.getElementById('footer-date');
+  if(fd)fd.textContent=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  importScreen.style.display='none';
+  dashboardEl.style.display='flex';
+  const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
+  const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
+  ['tab-btn-evolucao','tab-btn-classes','tab-btn-mov'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='inline-block';});
+  renderPeriodoChips();
+  updatePeriodo();
+  // Switch to Evolução Mensal if multiple periods
+  if(PERIODOS.length>1)switchTab('evolucao');
+  applyFilters();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    try{const m=computeMetrics();renderCharts(m);}catch(e){console.warn('[charts]',e);}
+    if(PERIODOS.length>1)renderEvoCharts();
+  }));
+}
 
 function loadFile(file){
   if(/\.pdf$/i.test(file.name)){loadFilePDF(file);return;}
@@ -2159,7 +2361,7 @@ function resetAll(){
     const el=document.getElementById(id);
     if(el)el.classList.remove('visible');
   });
-  fileInput.value='';
+  _lastSheetId='';const gsUrl=document.getElementById('gs-url');if(gsUrl){const saved=localStorage.getItem('gs_last_url')||'';gsUrl.value=saved;}
   dashboardEl.style.display='none';
   importScreen.style.display='flex';
   const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='none';
@@ -3401,6 +3603,11 @@ function switchTab(tab){
   if(isMov) renderMovTab();
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
+// Restore last used URL
+(function(){const u=localStorage.getItem('gs_last_url');if(u){const el=document.getElementById('gs-url');if(el)el.value=u;}})();
+// Enter key on URL input
+const gsUrlEl=document.getElementById('gs-url');
+if(gsUrlEl)gsUrlEl.addEventListener('keydown',e=>{if(e.key==='Enter')iniciarCargaSheets();});
 
 
 // ====================================================================
