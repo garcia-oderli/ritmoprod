@@ -824,7 +824,7 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
       <input id="gs-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." autocomplete="off" spellcheck="false" />
       <button id="btn-gs-load" onclick="iniciarCargaSheets()">▶ Carregar</button>
     </div>
-    <p class="gs-hint">Planilha pública · Abas nomeadas <strong>Jan/26</strong>, <strong>Fev/26</strong>… · Colunas: Cod.Prod., Descrição Produto, Vlr.Vendas, Quantidade</p>
+    <p class="gs-hint">Planilha pública (Qualquer pessoa com o link) · 1 aba por mês (ex.: <strong>JAN-26</strong>, <strong>Fev/26</strong>…) · Colunas: código, descrição, quantidade, valor</p>
   </div>
   <div id="gs-progress">
     <div class="gs-spinner"></div>
@@ -1980,40 +1980,58 @@ const CRUZADA_COLORS={
 
 
 // ====================================================================
-// IMPORT — Google Sheets (sem API Key — endpoint público gviz/tq)
+// IMPORT — Google Sheets (sem API Key — export xlsx + SheetJS)
 // ====================================================================
 const importScreen=document.getElementById('import-screen');
 const dashboardEl=document.getElementById('dashboard');
 const importError=document.getElementById('import-error');
 document.getElementById('btn-trocar').addEventListener('click',resetAll);
 
-function parseGvizResponse(text){
-  const m=text.match(/setResponse\((\{[\s\S]*\})\)/);
-  if(!m)throw new Error('Resposta inesperada do Google Sheets');
-  return JSON.parse(m[1]);
+function extrairSheetId(url){
+  const m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m?m[1]:null;
 }
 
-function parseGvizTable(table){
-  const cols=table.cols||[];
-  const find=(...terms)=>cols.findIndex(c=>terms.some(t=>String(c.label||c.id||'').toLowerCase().includes(t.toLowerCase())));
-  const colCod=find('cod','code','código');
-  const colDesc=find('desc','produto','nome','product','item');
-  const colQtd=find('quantidade','qtd','qty','quant','unid');
-  const colFat=find('valor','vlr','venda','fat','receita','revenue');
-  const colFlag=find('flag');
-  if(colCod<0||colQtd<0||colFat<0)return[];
+// Detecta as colunas pelo cabeçalho (case-insensitive, tolerante a acentos/abreviações)
+function detectCols(headerRow){
+  const find=(...terms)=>headerRow.findIndex(c=>{
+    const s=String(c==null?'':c).toLowerCase();
+    return terms.some(t=>s.includes(t));
+  });
+  return {
+    cod:  find('cod','código','code'),
+    desc: find('desc','produto','nome','product'),
+    qtd:  find('quantidade','qtd','qty','quant','unid'),
+    fat:  find('valor','vlr','venda','fat','receita','revenue'),
+    flag: find('flag'),
+  };
+}
+
+const _toNum=v=>(typeof v==='number')?v:parseBRNum(v);
+
+// Converte uma worksheet (SheetJS) em linhas no formato do dashboard
+function parseWorksheetToData(ws){
+  const aoa=XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null,blankrows:false});
+  if(!aoa.length)return[];
+  // Procura a linha de cabeçalho nas primeiras 15 linhas
+  let cols=null,headerIdx=-1;
+  for(let i=0;i<Math.min(aoa.length,15);i++){
+    const c=detectCols(aoa[i]||[]);
+    if(c.cod>=0&&c.qtd>=0&&c.fat>=0){cols=c;headerIdx=i;break;}
+  }
+  if(!cols)return[];
   const rows=[];
-  for(const row of (table.rows||[])){
-    const c=row.c||[];
-    const cod=String((c[colCod]&&c[colCod].v!=null)?c[colCod].v:'').trim();
-    if(!cod||cod.toLowerCase()==='total'||cod.toLowerCase()==='subtotal')continue;
-    const rawQtd=(c[colQtd]&&c[colQtd].v!=null)?c[colQtd].v:0;
-    const rawFat=(c[colFat]&&c[colFat].v!=null)?c[colFat].v:0;
-    const qtd=typeof rawQtd==='number'?rawQtd:parseBRNum(rawQtd);
-    const fat=typeof rawFat==='number'?rawFat:parseBRNum(rawFat);
+  for(let i=headerIdx+1;i<aoa.length;i++){
+    const r=aoa[i]||[];
+    const cod=String(r[cols.cod]!=null?r[cols.cod]:'').trim();
+    if(!cod)continue;
+    const low=cod.toLowerCase();
+    if(low==='total'||low==='subtotal')continue;
+    const qtd=_toNum(r[cols.qtd]);
+    const fat=_toNum(r[cols.fat]);
     if(!qtd&&!fat)continue;
-    const desc=colDesc>=0&&c[colDesc]&&c[colDesc].v!=null?String(c[colDesc].v).trim():'';
-    const flag=colFlag>=0&&c[colFlag]&&c[colFlag].v!=null?String(c[colFlag].v).trim():'';
+    const desc=cols.desc>=0&&r[cols.desc]!=null?String(r[cols.desc]).trim():'';
+    const flag=cols.flag>=0&&r[cols.flag]!=null?String(r[cols.flag]).trim():'';
     rows.push({
       [COL.ITEM]:rows.length+1,[COL.COD]:cod,[COL.DESC]:desc,[COL.QTD]:qtd,
       [COL.QTD_MES]:0,[COL.FAT]:fat,[COL.FAT_MES]:0,[COL.TICKET]:qtd>0?fat/qtd:0,
@@ -2023,19 +2041,15 @@ function parseGvizTable(table){
   return rows;
 }
 
-async function fetchSheet(spreadsheetId,sheetName){
-  const url=`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
-  const res=await fetch(url);
-  if(!res.ok)throw new Error('not found');
-  const text=await res.text();
-  const json=parseGvizResponse(text);
-  if(json.status!=='ok')throw new Error('not found');
-  return parseGvizTable(json.table);
-}
-
-function extrairSheetId(url){
-  const m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return m?m[1]:null;
+// Normaliza o nome da aba para o rótulo "Mmm/aa" (aceita JAN-26, JAN/26, Janeiro 2026...)
+function normalizeMonthLabel(name){
+  const M={JAN:'Jan',FEV:'Fev',MAR:'Mar',ABR:'Abr',MAI:'Mai',JUN:'Jun',JUL:'Jul',AGO:'Ago',SET:'Set',OUT:'Out',NOV:'Nov',DEZ:'Dez'};
+  const m=String(name||'').trim().match(/([A-Za-zçÇ]{3,})[\s\/\-\._]*(\d{2,4})/);
+  if(m){
+    const mon=M[m[1].toUpperCase().slice(0,3)];
+    if(mon){const yy=m[2].length>2?m[2].slice(-2):m[2];return mon+'/'+yy;}
+  }
+  return String(name||'').trim();
 }
 
 function sortPeriodosChron(){
@@ -2044,25 +2058,38 @@ function sortPeriodosChron(){
   PERIODOS.sort((a,b)=>key(a.label)-key(b.label));
 }
 
+// Carrega TODAS as abas de uma vez baixando o .xlsx (export) e lendo com SheetJS.
+// Mais robusto que adivinhar nomes via gviz: pega os nomes reais das abas,
+// em qualquer formato (JAN-26, Jan/26, ...), num único request.
 async function carregarDoSheets(spreadsheetId){
-  const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const yr=new Date().getFullYear();
-  const candidates=[];
-  for(let y=yr-1;y<=yr+1;y++){const yy=String(y).slice(-2);for(const m of MESES)candidates.push(`${m}/${yy}`);}
   const progEl=document.getElementById('gs-status-text');
-  if(progEl)progEl.textContent='Procurando abas...';
-  const results=await Promise.allSettled(
-    candidates.map(name=>fetchSheet(spreadsheetId,name).then(rows=>({name,rows})))
-  );
+  if(progEl)progEl.textContent='Baixando planilha...';
+  const url=`https://docs.google.com/spreadsheets/d/${spreadsheetId}/export?format=xlsx`;
+  let res;
+  try{res=await fetch(url);}
+  catch(e){throw new Error('Falha de rede ao acessar a planilha. Verifique sua conexão.');}
+  if(!res.ok){
+    if(res.status===401||res.status===403)
+      throw new Error('Planilha sem acesso público. Compartilhe como "Qualquer pessoa com o link" (Leitor) e tente de novo.');
+    throw new Error('Não foi possível baixar a planilha (HTTP '+res.status+').');
+  }
+  const buf=await res.arrayBuffer();
+  if(progEl)progEl.textContent='Lendo abas...';
+  let wb;
+  try{wb=XLSX.read(buf,{type:'array',cellFormula:false,cellNF:false,cellText:false});}
+  catch(e){throw new Error('Não consegui ler a planilha. Confirme que o link é de uma planilha Google válida.');}
   PERIODOS=[];
-  for(const r of results){
-    if(r.status!=='fulfilled'||!r.value.rows.length)continue;
-    const{name,rows}=r.value;
+  for(const sheetName of wb.SheetNames){
+    const ws=wb.Sheets[sheetName];
+    if(!ws)continue;
+    const rows=parseWorksheetToData(ws);
+    if(!rows.length)continue;
     calcABCDinamico(rows);
-    PERIODOS.push({label:name,data:rows,fat:sumFat(rows),qtd:sumQtd(rows),ticket:sumQtd(rows)>0?sumFat(rows)/sumQtd(rows):0});
+    PERIODOS.push({label:normalizeMonthLabel(sheetName),data:rows,fat:sumFat(rows),qtd:sumQtd(rows),ticket:sumQtd(rows)>0?sumFat(rows)/sumQtd(rows):0});
   }
   sortPeriodosChron();
-  if(!PERIODOS.length)throw new Error('Nenhuma aba encontrada. Nomeie as abas como Jan/26, Fev/26, Mar/26...');
+  if(!PERIODOS.length)
+    throw new Error('Nenhuma aba com dados reconhecíveis. Confira se há colunas de código, descrição, quantidade e valor.');
 }
 
 let _lastSheetId='';
