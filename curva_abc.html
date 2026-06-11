@@ -108,8 +108,9 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,s
 #import-screen .logo{font-size:5rem;line-height:1;user-select:none;}
 #import-screen h1{font-size:2rem;font-weight:700;color:var(--accent);text-align:center;}
 #import-screen p.sub{color:var(--text-muted);font-size:1rem;text-align:center;max-width:520px;opacity:.85;}
-.gs-card{background:var(--surface2,#222226);border:1px solid var(--border);border-radius:12px;padding:1.6rem 1.8rem;width:100%;max-width:520px;display:flex;flex-direction:column;gap:1rem;}
+.gs-card{background:var(--surface2,#222226);border:1px solid var(--border);border-radius:12px;padding:1.6rem 1.8rem;width:100%;max-width:520px;display:flex;flex-direction:column;gap:.9rem;}
 .gs-card label{font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;}
+.gs-hint{font-size:.75rem;color:var(--text-muted);line-height:1.45;}
 .gs-url-wrap{display:flex;gap:.5rem;}
 .gs-url-wrap input{flex:1;background:var(--bg,#0A0A0B);border:1.5px solid var(--border);border-radius:7px;color:var(--text);padding:.55rem .85rem;font-size:.88rem;font-family:inherit;transition:border-color .15s;}
 .gs-url-wrap input:focus{outline:none;border-color:var(--accent);}
@@ -117,23 +118,11 @@ body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,s
 #btn-gs-load{background:var(--accent);color:#fff;border:none;border-radius:7px;padding:.55rem 1.2rem;font-size:.88rem;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;transition:opacity .15s;}
 #btn-gs-load:hover{opacity:.85;}
 #btn-gs-load:disabled{opacity:.45;cursor:not-allowed;}
-.gs-apikey-row{display:flex;align-items:center;gap:.6rem;cursor:pointer;}
-.gs-apikey-row span{font-size:.78rem;color:var(--text-muted);}
-.gs-apikey-row .gs-key-lbl{font-size:.78rem;font-weight:600;color:var(--accent);}
-#gs-apikey-panel{display:none;flex-direction:column;gap:.4rem;}
-#gs-apikey-panel input{background:var(--bg,#0A0A0B);border:1.5px solid var(--border);border-radius:7px;color:var(--text);padding:.45rem .85rem;font-size:.82rem;font-family:inherit;width:100%;}
-#gs-apikey-panel input:focus{outline:none;border-color:var(--accent);}
-#gs-apikey-panel small{font-size:.72rem;color:var(--text-muted);}
 #gs-progress{display:none;flex-direction:column;align-items:center;gap:.5rem;}
 #gs-progress .gs-spinner{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;}
 #gs-progress span{font-size:.82rem;color:var(--text-muted);}
 #drop-zone{display:none;}
 @keyframes pulse-border{0%,100%{border-color:var(--accent);box-shadow:0 0 0 0 rgba(66,165,245,.2);}50%{border-color:#1a237e;box-shadow:0 0 0 8px rgba(66,165,245,0);}}
-#drop-zone.drag-over{background:rgba(255,92,31,.08);border-color:var(--accent);animation:none;}
-#drop-zone .drop-icon{font-size:3rem;}
-#drop-zone p{color:var(--text-muted);font-size:.95rem;text-align:center;}
-#btn-select{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.75rem 2rem;font-size:1rem;font-weight:600;cursor:pointer;transition:background .2s,transform .1s;text-transform:uppercase;letter-spacing:.5px;}
-#btn-select:hover{background:var(--primary-light);transform:translateY(-1px);}
 #file-input{display:none;}
 #import-error{color:#b91c1c;font-size:.9rem;display:none;}
 
@@ -829,29 +818,18 @@ footer{background:var(--card);border-top:1px solid var(--border);padding:.6rem 1
   <div class="logo">📊</div>
   <h1>Dashboard Curva ABC</h1>
   <p class="sub">Cole o link da planilha do Google Sheets. Cada aba = um mês — o dashboard calcula a curva ABC automaticamente.</p>
-
   <div class="gs-card">
     <label>Link da Planilha</label>
     <div class="gs-url-wrap">
       <input id="gs-url" type="text" placeholder="https://docs.google.com/spreadsheets/d/..." autocomplete="off" spellcheck="false" />
       <button id="btn-gs-load" onclick="iniciarCargaSheets()">▶ Carregar</button>
     </div>
-
-    <div class="gs-apikey-row" onclick="toggleApiKeyPanel()">
-      <span class="gs-key-lbl">🔑 API Key</span>
-      <span id="gs-key-status">clique para configurar</span>
-    </div>
-    <div id="gs-apikey-panel">
-      <input id="gs-apikey" type="password" placeholder="Google Sheets API Key" autocomplete="off" oninput="salvarApiKey(this.value)" />
-      <small>Salva no navegador (localStorage) — nunca enviada a servidor</small>
-    </div>
+    <p class="gs-hint">Planilha pública · Abas nomeadas <strong>Jan/26</strong>, <strong>Fev/26</strong>… · Colunas: Cod.Prod., Descrição Produto, Vlr.Vendas, Quantidade</p>
   </div>
-
   <div id="gs-progress">
     <div class="gs-spinner"></div>
-    <span id="gs-status-text">Lendo abas...</span>
+    <span id="gs-status-text">Procurando abas...</span>
   </div>
-
   <p id="import-error" style="display:none;color:#f87171;font-size:.85rem;max-width:500px;text-align:center;"></p>
   <div id="drop-zone"></div>
 </div>
@@ -1600,10 +1578,8 @@ async function parsePDFToData(file){
 // ====================================================================
 // MULTI-PERÍODO / EVOLUÇÃO MENSAL
 // ====================================================================
-let PERIODOS=[]; // [{label, data:[], fat, qtd, ticket}]
 let evoCharts={};
 
-// file-input-periodo removed (Google Sheets integration)
 
 
 function loadPeriodo(file){
@@ -2004,186 +1980,128 @@ const CRUZADA_COLORS={
 
 
 // ====================================================================
-// IMPORT — Google Sheets
+// IMPORT — Google Sheets (sem API Key — endpoint público gviz/tq)
 // ====================================================================
 const importScreen=document.getElementById('import-screen');
 const dashboardEl=document.getElementById('dashboard');
 const importError=document.getElementById('import-error');
 document.getElementById('btn-trocar').addEventListener('click',resetAll);
 
-// ── API Key (localStorage) ────────────────────────────────────────────────
-let _gsApiKey=localStorage.getItem('gs_api_key')||'';
-(function initApiKeyUI(){
-  const inp=document.getElementById('gs-apikey');
-  const st=document.getElementById('gs-key-status');
-  if(_gsApiKey){inp.value=_gsApiKey;if(st)st.textContent='configurada ✓';}
-})();
-function salvarApiKey(v){
-  _gsApiKey=v.trim();
-  localStorage.setItem('gs_api_key',_gsApiKey);
-  const st=document.getElementById('gs-key-status');
-  if(st)st.textContent=_gsApiKey?'configurada ✓':'clique para configurar';
-}
-function toggleApiKeyPanel(){
-  const p=document.getElementById('gs-apikey-panel');
-  p.style.display=p.style.display==='flex'?'none':'flex';
+function parseGvizResponse(text){
+  const m=text.match(/setResponse\((\{[\s\S]*\})\)/);
+  if(!m)throw new Error('Resposta inesperada do Google Sheets');
+  return JSON.parse(m[1]);
 }
 
-// ── Extract spreadsheet ID ────────────────────────────────────────────────
-function extrairSheetId(url){
-  const m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
-  return m?m[1]:null;
-}
-
-// ── Auto-detect column by header keywords ────────────────────────────────
-function detectCol(headers,terms){
-  const idx=headers.findIndex(h=>terms.some(t=>String(h||'').toLowerCase().includes(t.toLowerCase())));
-  return idx>=0?idx:-1;
-}
-
-// ── Parse rows from sheet values array ───────────────────────────────────
-function parseSheetRows(values){
-  if(!values||values.length<2)return[];
-  const headers=values[0].map(h=>String(h||'').trim());
-  const colCod=detectCol(headers,['cod','code','código']);
-  const colDesc=detectCol(headers,['desc','produto','nome','product','item']);
-  const colQtd=detectCol(headers,['qtd','quantidade','qty','quant','unid']);
-  const colFat=detectCol(headers,['valor','venda','fat','vlr','receita','revenue','total']);
-  const colFlag=detectCol(headers,['flag']);
+function parseGvizTable(table){
+  const cols=table.cols||[];
+  const find=(...terms)=>cols.findIndex(c=>terms.some(t=>String(c.label||c.id||'').toLowerCase().includes(t.toLowerCase())));
+  const colCod=find('cod','code','código');
+  const colDesc=find('desc','produto','nome','product','item');
+  const colQtd=find('quantidade','qtd','qty','quant','unid');
+  const colFat=find('valor','vlr','venda','fat','receita','revenue');
+  const colFlag=find('flag');
   if(colCod<0||colQtd<0||colFat<0)return[];
   const rows=[];
-  for(const row of values.slice(1)){
-    const cod=String(row[colCod]||'').trim();
+  for(const row of (table.rows||[])){
+    const c=row.c||[];
+    const cod=String((c[colCod]&&c[colCod].v!=null)?c[colCod].v:'').trim();
     if(!cod||cod.toLowerCase()==='total'||cod.toLowerCase()==='subtotal')continue;
-    const qtd=parseBRNum(row[colQtd]);
-    const fat=parseBRNum(row[colFat]);
-    if(qtd===0&&fat===0)continue;
-    const desc=colDesc>=0?String(row[colDesc]||'').trim():'';
-    const flag=colFlag>=0?String(row[colFlag]||'').trim():'';
+    const rawQtd=(c[colQtd]&&c[colQtd].v!=null)?c[colQtd].v:0;
+    const rawFat=(c[colFat]&&c[colFat].v!=null)?c[colFat].v:0;
+    const qtd=typeof rawQtd==='number'?rawQtd:parseBRNum(rawQtd);
+    const fat=typeof rawFat==='number'?rawFat:parseBRNum(rawFat);
+    if(!qtd&&!fat)continue;
+    const desc=colDesc>=0&&c[colDesc]&&c[colDesc].v!=null?String(c[colDesc].v).trim():'';
+    const flag=colFlag>=0&&c[colFlag]&&c[colFlag].v!=null?String(c[colFlag].v).trim():'';
     rows.push({
-      [COL.ITEM]:rows.length+1,
-      [COL.COD]:cod,
-      [COL.DESC]:desc,
-      [COL.QTD]:qtd,
-      [COL.QTD_MES]:0,
-      [COL.FAT]:fat,
-      [COL.FAT_MES]:0,
-      [COL.TICKET]:qtd>0?fat/qtd:0,
-      [COL.ABC_VAL]:'',
-      [COL.ABC_QTD]:'',
-      [COL.CRUZADA]:'',
-      [COL.ESTRATEGIA]:'',
-      [COL.FLAG]:flag,
+      [COL.ITEM]:rows.length+1,[COL.COD]:cod,[COL.DESC]:desc,[COL.QTD]:qtd,
+      [COL.QTD_MES]:0,[COL.FAT]:fat,[COL.FAT_MES]:0,[COL.TICKET]:qtd>0?fat/qtd:0,
+      [COL.ABC_VAL]:'',[COL.ABC_QTD]:'',[COL.CRUZADA]:'',[COL.ESTRATEGIA]:'',[COL.FLAG]:flag,
     });
   }
   return rows;
 }
 
-// ── Sort PERIODOS chronologically ────────────────────────────────────────
+async function fetchSheet(spreadsheetId,sheetName){
+  const url=`https://docs.google.com/spreadsheets/d/${spreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(sheetName)}`;
+  const res=await fetch(url);
+  if(!res.ok)throw new Error('not found');
+  const text=await res.text();
+  const json=parseGvizResponse(text);
+  if(json.status!=='ok')throw new Error('not found');
+  return parseGvizTable(json.table);
+}
+
+function extrairSheetId(url){
+  const m=url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m?m[1]:null;
+}
+
 function sortPeriodosChron(){
   const M={JAN:1,FEV:2,MAR:3,ABR:4,MAI:5,JUN:6,JUL:7,AGO:8,SET:9,OUT:10,NOV:11,DEZ:12};
   const key=l=>{const m=String(l||'').match(/^([A-Za-z]+)[\s\/\-](\d{2,4})$/);return m?(+m[2]*100+(M[m[1].toUpperCase().slice(0,3)]||0)):0;};
   PERIODOS.sort((a,b)=>key(a.label)-key(b.label));
 }
 
-// ── Core Google Sheets loader ─────────────────────────────────────────────
-let _lastSheetId='';
-async function carregarDoSheets(sheetId,apiKey){
-  const base='https://sheets.googleapis.com/v4/spreadsheets';
-  // 1. Get list of sheets
-  const metaRes=await fetch(`${base}/${sheetId}?key=${encodeURIComponent(apiKey)}&fields=sheets.properties`);
-  if(!metaRes.ok){
-    const e=await metaRes.json().catch(()=>({}));
-    throw new Error((e.error&&e.error.message)||`Erro ${metaRes.status}: verifique a API Key e o acesso à planilha`);
-  }
-  const meta=await metaRes.json();
-  const sheetNames=(meta.sheets||[]).map(s=>s.properties.title);
-  if(!sheetNames.length)throw new Error('Nenhuma aba encontrada na planilha');
-
+async function carregarDoSheets(spreadsheetId){
+  const MESES=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const yr=new Date().getFullYear();
+  const candidates=[];
+  for(let y=yr-1;y<=yr+1;y++){const yy=String(y).slice(-2);for(const m of MESES)candidates.push(`${m}/${yy}`);}
   const progEl=document.getElementById('gs-status-text');
-
+  if(progEl)progEl.textContent='Procurando abas...';
+  const results=await Promise.allSettled(
+    candidates.map(name=>fetchSheet(spreadsheetId,name).then(rows=>({name,rows})))
+  );
   PERIODOS=[];
-  for(let i=0;i<sheetNames.length;i++){
-    const name=sheetNames[i];
-    if(progEl)progEl.textContent=`Lendo aba ${i+1}/${sheetNames.length}: ${name}`;
-    const dataRes=await fetch(`${base}/${sheetId}/values/${encodeURIComponent(name)}?key=${encodeURIComponent(apiKey)}`);
-    if(!dataRes.ok)continue;
-    const data=await dataRes.json();
-    const rows=parseSheetRows(data.values||[]);
-    if(!rows.length)continue;
+  for(const r of results){
+    if(r.status!=='fulfilled'||!r.value.rows.length)continue;
+    const{name,rows}=r.value;
     calcABCDinamico(rows);
-    PERIODOS.push({
-      label:name,
-      data:rows,
-      fat:sumFat(rows),
-      qtd:sumQtd(rows),
-      ticket:sumQtd(rows)>0?sumFat(rows)/sumQtd(rows):0,
-    });
+    PERIODOS.push({label:name,data:rows,fat:sumFat(rows),qtd:sumQtd(rows),ticket:sumQtd(rows)>0?sumFat(rows)/sumQtd(rows):0});
   }
-  if(!PERIODOS.length)throw new Error('Nenhuma aba com dados reconhecidos. Verifique que as colunas têm cabeçalhos: Cod, Descrição, Qtd, Valor');
   sortPeriodosChron();
+  if(!PERIODOS.length)throw new Error('Nenhuma aba encontrada. Nomeie as abas como Jan/26, Fev/26, Mar/26...');
 }
 
-// ── Public entry point (button click) ────────────────────────────────────
+let _lastSheetId='';
 async function iniciarCargaSheets(){
   const url=(document.getElementById('gs-url').value||'').trim();
   if(!url){showImportError('Cole o link da planilha do Google Sheets');return;}
   const sheetId=extrairSheetId(url);
-  if(!sheetId){showImportError('Link inválido. Use o link completo da planilha: https://docs.google.com/spreadsheets/d/...');return;}
-  if(!_gsApiKey){showImportError('Configure a API Key do Google Sheets (clique em 🔑 API Key)');return;}
-
+  if(!sheetId){showImportError('Link inválido. Use o link completo: https://docs.google.com/spreadsheets/d/...');return;}
   const btn=document.getElementById('btn-gs-load');
   const prog=document.getElementById('gs-progress');
-  btn.disabled=true;
-  prog.style.display='flex';
-  importError.style.display='none';
-
+  btn.disabled=true;prog.style.display='flex';importError.style.display='none';
   try{
-    await carregarDoSheets(sheetId,_gsApiKey);
+    await carregarDoSheets(sheetId);
     _lastSheetId=sheetId;
-    localStorage.setItem('gs_last_url',document.getElementById('gs-url').value);
+    localStorage.setItem('gs_last_url',url);
     finalizarCargaSheets();
-  }catch(err){
-    showImportError(err.message);
-  }finally{
-    btn.disabled=false;
-    prog.style.display='none';
-  }
+  }catch(err){showImportError(err.message);}
+  finally{btn.disabled=false;prog.style.display='none';}
 }
 
-function recarregarSheets(){
-  if(!_lastSheetId&&!_gsApiKey)return;
-  if(!_lastSheetId){const saved=localStorage.getItem('gs_last_url')||'';document.getElementById('gs-url').value=saved;}
-  iniciarCargaSheets();
-}
+function recarregarSheets(){iniciarCargaSheets();}
+function showImportError(msg){importError.textContent='❌ '+msg;importError.style.display='block';}
 
-function showImportError(msg){
-  importError.textContent='❌ '+msg;
-  importError.style.display='block';
-}
-
-// ── After successful load: show dashboard ────────────────────────────────
 function finalizarCargaSheets(){
-  // Use last period as main RAW; user can consolidate later
   const ultimo=PERIODOS[PERIODOS.length-1];
   RAW=ultimo.data;
   const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
-  computeAcum();
-  populateFamiliaFilter();
+  computeAcum();populateFamiliaFilter();
   const pi=document.getElementById('f-periodo');if(pi)pi.value=ultimo.label;
   const now=new Date();
   const infoEl=document.getElementById('file-info-text');
-  if(infoEl){infoEl.style.display='block';infoEl.textContent=PERIODOS.length+' períodos carregados · '+RAW.length+' produtos (último: '+ultimo.label+')';}
+  if(infoEl){infoEl.style.display='block';infoEl.textContent=PERIODOS.length+' período'+(PERIODOS.length>1?'s':'')+' · '+RAW.length+' produtos (último: '+ultimo.label+')';}
   const fd=document.getElementById('footer-date');
   if(fd)fd.textContent=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-  importScreen.style.display='none';
-  dashboardEl.style.display='flex';
+  importScreen.style.display='none';dashboardEl.style.display='flex';
   const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
   const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
   ['tab-btn-evolucao','tab-btn-classes','tab-btn-mov'].forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='inline-block';});
-  renderPeriodoChips();
-  updatePeriodo();
-  // Switch to Evolução Mensal if multiple periods
+  renderPeriodoChips();updatePeriodo();
   if(PERIODOS.length>1)switchTab('evolucao');
   applyFilters();
   requestAnimationFrame(()=>requestAnimationFrame(()=>{
@@ -2192,107 +2110,363 @@ function finalizarCargaSheets(){
   }));
 }
 
-function loadFile(file){
-  if(/\.pdf$/i.test(file.name)){loadFilePDF(file);return;}
-  importError.style.display='none';
+// ====================================================================
+// MULTI-PERÍODO / EVOLUÇÃO MENSAL
+// ====================================================================
+let PERIODOS=[]; // [{label, data:[], fat, qtd, ticket}]
+
+document.getElementById('file-input-periodo').addEventListener('change',function(e){
+  const files=Array.from(e.target.files);
+  files.forEach(f=>loadPeriodo(f));
+  e.target.value='';
+});
+
+function loadPeriodo(file){
+  if(/\.pdf$/i.test(file.name)){loadPeriodoPDF(file);return;}
   const reader=new FileReader();
   reader.onload=function(e){
     try{
       const wb=XLSX.read(e.target.result,{type:'array',cellFormula:false,cellNF:false,cellText:false});
       const ws=wb.Sheets['Planilha1'];
-      if(!ws)throw new Error('Aba Planilha1 não encontrada');
-      const data=XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});
-      // Limpar linhas inválidas: ITEM deve ser número, COD deve ser string não vazia
-      const cleaned=data.filter(r=>{
-        const item=r[COL.ITEM];
-        const cod=r[COL.COD];
-        return item!=null && !isNaN(Number(item)) && cod!=null && String(cod).trim()!=='';
-      });
-      if(!cleaned.length)throw new Error('Nenhum dado válido encontrado');
-      // Sanitizar campos que podem vir como fórmula string quando xlsx não tem cache
-      const FORMULA_RE=/^=/;
-      const TEXT_COLS=[COL.ABC_VAL,COL.ABC_QTD,COL.CRUZADA,COL.ESTRATEGIA,COL.FLAG];
-      const NUM_COLS=[COL.QTD,COL.QTD_MES,COL.FAT,COL.FAT_MES,COL.TICKET,COL.PCT_FAT,COL.ACUM_VAL];
-      cleaned.forEach(r=>{
-        TEXT_COLS.forEach(c=>{const v=r[c];if(typeof v==='string'&&FORMULA_RE.test(v))r[c]=null;});
-        NUM_COLS.forEach(c=>{const v=r[c];if(typeof v==='string'&&FORMULA_RE.test(v))r[c]=0;});
-      });
-      RAW=cleaned;
-      if(needsABCCalc(RAW)){
-        calcABCDinamico(RAW);
-        const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
-      } else {
-        const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.remove('visible');
-      }
-      computeAcum();
-      populateFamiliaFilter();
-
-      const periodoInput=document.getElementById('f-periodo');
-      periodoInput.value=lerPeriodo(ws);
-
-      const now=new Date();
-      document.getElementById('file-info-text').textContent=file.name+' · '+RAW.length+' produtos · '+now.toLocaleDateString('pt-BR');
-      document.getElementById('footer-date').textContent=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-      importScreen.style.display='none';
-      dashboardEl.style.display='flex';
-      document.getElementById('file-info-text').style.display='block';
-      document.getElementById('file-info-text').textContent=file.name+' · '+RAW.length+' produtos';
-      const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
-      const tbe=document.getElementById('tab-btn-evolucao');if(tbe)tbe.style.display='inline-block';
-    const tbc2=document.getElementById('tab-btn-classes');if(tbc2)tbc2.style.display='inline-block';
-    const tbm2=document.getElementById('tab-btn-mov');if(tbm2)tbm2.style.display='inline-block';
-      const tbc=document.getElementById('tab-btn-classes');if(tbc)tbc.style.display='inline-block';
-      const tbm=document.getElementById('tab-btn-mov');if(tbm)tbm.style.display='inline-block';
-      const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
-      updatePeriodo();
-      // 1ª chamada: renderiza KPIs, tabela e insights imediatamente
-      applyFilters();
-      // 2ª chamada: re-renderiza gráficos após browser pintar layout completo
-      // (requestAnimationFrame duplo garante que o CSS grid já calculou as dimensões dos canvas)
-      requestAnimationFrame(()=>requestAnimationFrame(()=>{
-        try{const m=computeMetrics();renderCharts(m);}catch(e){console.warn('[charts reload]',e);}
-      }));
-    }catch(err){
-      importError.textContent='❌ '+err.message;
-      importError.style.display='block';
-    }
+      if(!ws)throw new Error('Sem aba Planilha1');
+      let data=XLSX.utils.sheet_to_json(ws,{defval:null,raw:true});
+      data=data.filter(r=>r[COL.ITEM]!=null&&!isNaN(Number(r[COL.ITEM]))&&r[COL.COD]!=null&&String(r[COL.COD]).trim()!=='');
+      if(!data.length)throw new Error('Sem dados');
+      // Tenta ler período da célula Y1
+      let label='';
+      try{const pcel=ws['Y1'];if(pcel&&pcel.w)label=String(pcel.w).trim();}catch(ex){}
+      if(!label) label=file.name.replace(/\.(xlsx|xls)$/i,'').replace(/_/g,' ');
+      // ABC dinâmico se necessário
+      if(needsABCCalc(data)) calcABCDinamico(data);
+      // Evitar duplicatas (mesmo label)
+      PERIODOS=PERIODOS.filter(p=>p.label!==label);
+      const fat=sumFat(data), qtd=sumQtd(data);
+      PERIODOS.push({label, data, fat, qtd, ticket:qtd>0?fat/qtd:0});
+      // Ordenar por label (ordem cronológica se formato mes/ano)
+      PERIODOS.sort((a,b)=>{
+    const M={JAN:1,FEV:2,MAR:3,ABR:4,MAI:5,JUN:6,JUL:7,AGO:8,SET:9,OUT:10,NOV:11,DEZ:12};
+    const p=l=>{const m=String(l).match(/^([A-Za-z]+)\/(\d+)$/);return m?(+m[2]*100+(M[m[1].toUpperCase().slice(0,3)]||0)):0;};
+    return p(a.label)-p(b.label);
+  });
+      renderPeriodoChips();
+      renderEvolucao();
+    }catch(err){alert('Erro em '+file.name+': '+err.message);}
   };
   reader.readAsArrayBuffer(file);
 }
 
 
-async function loadFilePDF(file){
-  importError.style.display='none';
+async function loadPeriodoPDF(file){
   try{
     const {rows,periodLabel}=await parsePDFToData(file);
-    RAW=rows;
-    const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
-    computeAcum();
-    populateFamiliaFilter();
-    const pi=document.getElementById('f-periodo');
-    if(pi)pi.value=periodLabel||file.name.replace(/\.pdf$/i,'');
-    const now=new Date();
-    const infoEl=document.getElementById('file-info-text');
-    if(infoEl){infoEl.style.display='block';infoEl.textContent=file.name+' · '+RAW.length+' produtos';}
-    const fd=document.getElementById('footer-date');
-    if(fd)fd.textContent=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
-    importScreen.style.display='none';
-    dashboardEl.style.display='flex';
-    const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
-    const tbe=document.getElementById('tab-btn-evolucao');if(tbe)tbe.style.display='inline-block';
-    const tbc2=document.getElementById('tab-btn-classes');if(tbc2)tbc2.style.display='inline-block';
-    const tbm2=document.getElementById('tab-btn-mov');if(tbm2)tbm2.style.display='inline-block';
-    const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
-    updatePeriodo();
-    applyFilters();
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      try{const m=computeMetrics();renderCharts(m);}catch(e){console.warn('[charts]',e);}
-    }));
-  }catch(err){
-    importError.textContent='❌ '+err.message;
-    importError.style.display='block';
+    const label=periodLabel||file.name.replace(/\.pdf$/i,'').replace(/_/g,' ');
+    PERIODOS=PERIODOS.filter(p=>p.label!==label);
+    const fat=sumFat(rows),qtd=sumQtd(rows);
+    PERIODOS.push({label,data:rows,fat,qtd,ticket:qtd>0?fat/qtd:0});
+    PERIODOS.sort((a,b)=>{
+    const M={JAN:1,FEV:2,MAR:3,ABR:4,MAI:5,JUN:6,JUL:7,AGO:8,SET:9,OUT:10,NOV:11,DEZ:12};
+    const p=l=>{const m=String(l).match(/^([A-Za-z]+)\/(\d+)$/);return m?(+m[2]*100+(M[m[1].toUpperCase().slice(0,3)]||0)):0;};
+    return p(a.label)-p(b.label);
+  });
+    renderPeriodoChips();
+    renderEvolucao();
+    const tbe=document.getElementById('tab-btn-evolucao');
+    if(tbe)tbe.style.display='inline-block';
+  }catch(err){alert('Erro no PDF '+file.name+':\n'+err.message);}
+}
+
+
+// ====================================================================
+// CONSOLIDAR PERÍODOS — Análise unificada (90 dias ou N meses)
+// ====================================================================
+function consolidarPeriodos(){
+  if(!PERIODOS.length){alert('Adicione pelo menos 1 período para consolidar.');return;}
+
+  // Aggregate by product code (sum QTD + FAT across all periods)
+  const map=new Map(); // cod → {desc, qtd, fat}
+  for(const periodo of PERIODOS){
+    for(const r of periodo.data){
+      const cod=String(r[COL.COD]||'').trim();
+      if(!cod)continue;
+      const qtd=num(r,COL.QTD), fat=num(r,COL.FAT);
+      if(map.has(cod)){
+        const e=map.get(cod);
+        e.qtd+=qtd;
+        e.fat+=fat;
+      } else {
+        map.set(cod,{desc:String(r[COL.DESC]||'').trim(),qtd,fat});
+      }
+    }
+  }
+
+  if(!map.size){alert('Nenhum produto encontrado nos períodos carregados.');return;}
+
+  // Build unified row array
+  const rows=[];
+  let seq=1;
+  for(const [cod,e] of map){
+    rows.push({
+      [COL.ITEM]:seq++,
+      [COL.COD]:cod,
+      [COL.DESC]:e.desc,
+      [COL.QTD]:e.qtd,
+      [COL.QTD_MES]:PERIODOS.length>0?e.qtd/PERIODOS.length:0,
+      [COL.FAT]:e.fat,
+      [COL.FAT_MES]:PERIODOS.length>0?e.fat/PERIODOS.length:0,
+      [COL.TICKET]:e.qtd>0?e.fat/e.qtd:0,
+      [COL.ABC_VAL]:'',
+      [COL.ABC_QTD]:'',
+      [COL.CRUZADA]:'',
+      [COL.ESTRATEGIA]:'',
+      [COL.FLAG]:'',
+    });
+  }
+
+  // Recalculate ABC (by highest value + highest qty) and Cruzada
+  calcABCDinamico(rows);
+
+  // Set as main analysis
+  RAW=rows;
+  computeAcum();
+  populateFamiliaFilter();
+
+  // Labels: "Jan/26 + Fev/26 + Mar/26"
+  const labels=PERIODOS.map(p=>p.label).join(' + ');
+  const pi=document.getElementById('f-periodo');if(pi)pi.value=labels;
+  const infoEl=document.getElementById('file-info-text');
+  if(infoEl){infoEl.style.display='block';infoEl.textContent='Consolidado: '+labels+' · '+RAW.length+' produtos';}
+  const fd=document.getElementById('footer-date');
+  if(fd){const now=new Date();fd.textContent=now.toLocaleDateString('pt-BR')+' às '+now.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});}
+
+  // Show ABC auto badge
+  const ab=document.getElementById('abc-auto-badge');if(ab)ab.classList.add('visible');
+
+  // Switch to main dashboard
+  importScreen.style.display='none';
+  dashboardEl.style.display='flex';
+  const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='inline-flex';
+  const bt=document.getElementById('btn-trocar');if(bt)bt.style.display='inline-flex';
+
+  // Switch to portfolio tab
+  document.querySelectorAll('.tab-btn[data-tab]').forEach(btn=>{
+    btn.classList.toggle('active',btn.dataset.tab==='portfolio');
+  });
+  document.querySelectorAll('.tab-pane').forEach(pane=>{
+    pane.style.display=(pane.id==='tab-portfolio')?'block':'none';
+  });
+
+  updatePeriodo();
+  applyFilters();
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    try{const m=computeMetrics();renderCharts(m);}catch(e){console.warn('[charts]',e);}
+  }));
+}
+
+function clearPeriodos(){
+  PERIODOS=[];
+  Object.values(evoCharts).forEach(c=>{try{c.destroy();}catch(e){}});
+  evoCharts={};
+  renderPeriodoChips();
+  document.getElementById('evo-content').style.display='none';
+}
+
+function removePeriodo(label){
+  PERIODOS=PERIODOS.filter(p=>p.label!==label);
+  renderPeriodoChips();
+  renderEvolucao();
+}
+
+function renderPeriodoChips(){
+  const el=document.getElementById('periodo-items');
+  if(!PERIODOS.length){
+    el.innerHTML='<span style="color:var(--text-muted);font-size:.82rem;">Adicione arquivos Excel (.xlsx) ou PDF (Módulo Gerencial) mensais para ver a evolução.</span>';
+    const cbtnE=document.getElementById('btn-consolidar');if(cbtnE)cbtnE.disabled=true;
+    return;
+  }
+  const cbtn=document.getElementById('btn-consolidar');if(cbtn)cbtn.disabled=false;
+  el.innerHTML=PERIODOS.map((p,i)=>`
+    <span class="periodo-chip${i===0?' chip-base':''}">
+      ${i===0?'📌 ':''}${p.label}
+      <span class="chip-remove" onclick="removePeriodo('${p.label.replace(/'/g,"\\'")}')">✕</span>
+    </span>`).join('');
+}
+
+function destroyEvoChart(id){if(evoCharts[id]){try{evoCharts[id].destroy();}catch(e){}delete evoCharts[id];}}
+
+function renderEvolucao(){
+  if(!PERIODOS.length){
+    document.getElementById('evo-content').style.display='none';
+    return;
+  }
+  document.getElementById('evo-content').style.display='flex';
+  const labels=PERIODOS.map(p=>p.label);
+  const fats=PERIODOS.map(p=>p.fat);
+  const tickets=PERIODOS.map(p=>p.ticket);
+  const n=PERIODOS.length;
+
+  // KPI strip (último vs anterior)
+  const last=PERIODOS[n-1], prev=n>1?PERIODOS[n-2]:null;
+  const kpis=[
+    {l:'Faturamento',v:fmtBRL(last.fat),delta:prev?((last.fat-prev.fat)/prev.fat*100):null,raw:prev?last.fat-prev.fat:null},
+    {l:'Ticket Médio',v:fmtBRL(last.ticket),delta:prev&&prev.ticket>0?((last.ticket-prev.ticket)/prev.ticket*100):null,raw:prev?last.ticket-prev.ticket:null},
+    {l:'Produtos',v:fmtInt(last.data.length),delta:prev?(last.data.length-prev.data.length):null,raw:null},
+    {l:'Períodos',v:n,delta:null,raw:null},
+  ];
+  document.getElementById('evo-kpi-strip').innerHTML=kpis.map(k=>{
+    let dStr='';
+    if(k.delta!==null){
+      const up=k.delta>=0;
+      const cls=up?'trend-up':'trend-down';
+      dStr=`<div class="${cls}">${up?'▲ +':'▼ '}${Math.abs(k.delta).toFixed(1)}%</div>`;
+    }
+    return `<div class="evo-kpi"><div class="evo-kpi-label">${k.l}</div><div class="evo-kpi-val">${k.v}</div>${dStr}</div>`;
+  }).join('');
+
+  // Chart: Faturamento
+  destroyEvoChart('fat');
+  evoCharts['fat']=new Chart(document.getElementById('evo-chart-fat'),{
+    type:'bar',
+    data:{labels,datasets:[{label:'Faturamento',data:fats,backgroundColor:'rgba(255,92,31,.7)',borderRadius:4,borderColor:'#FF5C1F',borderWidth:1}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtBRL(c.parsed.y)}}},scales:{x:{ticks:{font:{size:9},maxRotation:35}},y:{ticks:{font:{size:9},callback:fmtAxisBRL},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Chart: Ticket
+  destroyEvoChart('ticket');
+  evoCharts['ticket']=new Chart(document.getElementById('evo-chart-ticket'),{
+    type:'line',
+    data:{labels,datasets:[{label:'Ticket Médio',data:tickets,borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.12)',pointRadius:4,pointHoverRadius:6,borderWidth:2,fill:true,tension:.35}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>' '+fmtBRL(c.parsed.y)}}},scales:{x:{ticks:{font:{size:9},maxRotation:35}},y:{ticks:{font:{size:9},callback:fmtAxisBRL},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Chart: % por classe (stacked area)
+  const fatA=PERIODOS.map(p=>{const tF=sumFat(p.data);const a=p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='A');return tF>0?sumFat(a)/tF*100:0;});
+  const fatB=PERIODOS.map(p=>{const tF=sumFat(p.data);const b=p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='B');return tF>0?sumFat(b)/tF*100:0;});
+  const fatC=PERIODOS.map(p=>{const tF=sumFat(p.data);const c=p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='C');return tF>0?sumFat(c)/tF*100:0;});
+  destroyEvoChart('classes');
+  evoCharts['classes']=new Chart(document.getElementById('evo-chart-classes'),{
+    type:'line',
+    data:{labels,datasets:[
+      {label:'A',data:fatA,borderColor:'#60a5fa',backgroundColor:'rgba(96,165,250,.15)',fill:true,tension:.35,pointRadius:3},
+      {label:'B',data:fatB,borderColor:'#fbbf24',backgroundColor:'rgba(251,191,36,.12)',fill:true,tension:.35,pointRadius:3},
+      {label:'C',data:fatC,borderColor:'#4ade80',backgroundColor:'rgba(74,222,128,.1)',fill:true,tension:.35,pointRadius:3},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>' '+c.dataset.label+': '+c.parsed.y.toFixed(1)+'%'}}},scales:{x:{ticks:{font:{size:9},maxRotation:35}},y:{max:100,ticks:{font:{size:9},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Chart: Qtde por classe
+  const nA=PERIODOS.map(p=>p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='A').length);
+  const nB=PERIODOS.map(p=>p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='B').length);
+  const nC=PERIODOS.map(p=>p.data.filter(r=>String(r[COL.ABC_VAL]||'').trim()==='C').length);
+  destroyEvoChart('qtdcls');
+  evoCharts['qtdcls']=new Chart(document.getElementById('evo-chart-qtd-cls'),{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'A',data:nA,backgroundColor:'rgba(96,165,250,.8)',borderRadius:2},
+      {label:'B',data:nB,backgroundColor:'rgba(251,191,36,.8)',borderRadius:2},
+      {label:'C',data:nC,backgroundColor:'rgba(74,222,128,.7)',borderRadius:2},
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}}},scales:{x:{stacked:true,ticks:{font:{size:9},maxRotation:35}},y:{stacked:true,ticks:{font:{size:9}},grid:{color:'rgba(255,255,255,.06)'}}}}
+  });
+
+  // Champions: produtos Classe A em TODOS os períodos
+  if(n>=2){
+    const maps=PERIODOS.map(p=>{const m=new Map();p.data.forEach(r=>m.set(String(r[COL.COD]).trim(),r));return m;});
+    const allCods=new Set(maps[0].keys());
+    maps.forEach(m=>{for(const k of allCods)if(!m.has(k))allCods.delete(k);});
+    const champions=[];
+    allCods.forEach(cod=>{
+      const isAlwaysA=maps.every(m=>{const r=m.get(cod);return r&&String(r[COL.ABC_VAL]||'').trim().toUpperCase()==='A';});
+      if(isAlwaysA){
+        const avgFat=PERIODOS.reduce((s,p)=>{const r=maps[PERIODOS.indexOf(p)].get(cod);return s+(r?num(r,COL.FAT):0);},0)/n;
+        const r0=maps[0].get(cod);
+        champions.push({cod,desc:String(r0[COL.DESC]||''),familia:String(r0[COL.COD]||'').split('.')[0],avgFat});
+      }
+    });
+    champions.sort((a,b)=>b.avgFat-a.avgFat);
+    const chBody=document.getElementById('evo-champions-body');
+    chBody.innerHTML=champions.length?champions.slice(0,20).map(c=>`
+      <tr>
+        <td style="font-family:monospace;font-size:.73rem;">${c.cod}</td>
+        <td title="${c.desc}">${c.desc.substring(0,35)}${c.desc.length>35?'…':''}</td>
+        <td style="color:var(--text-muted);font-size:.75rem;">${c.familia}</td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${fmtBRL(c.avgFat)}</td>
+        <td style="text-align:center;"><span style="background:rgba(255,92,31,.15);color:var(--accent);padding:.12rem .45rem;border-radius:4px;font-size:.72rem;font-weight:700;">${n}/${n}</span></td>
+      </tr>`).join('')
+      :`<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhum produto foi Classe A em todos os períodos.</td></tr>`;
+    
+    // Movimentação: último vs penúltimo
+    const lastMap=maps[n-1], prevMap=maps[n-2];
+    const lastPeriod=PERIODOS[n-1], prevPeriod=PERIODOS[n-2];
+    document.getElementById('evo-move-th-p1').textContent=prevPeriod.label;
+    document.getElementById('evo-move-th-p2').textContent=lastPeriod.label;
+    const moved=[];
+    lastMap.forEach((r2,cod)=>{
+      const r1=prevMap.get(cod);
+      if(!r1)return;
+      const c1=String(r1[COL.ABC_VAL]||'').trim().toUpperCase();
+      const c2=String(r2[COL.ABC_VAL]||'').trim().toUpperCase();
+      if(c1&&c2&&c1!==c2){
+        const imp=(c1==='B'&&c2==='A')||(c1==='C'&&c2==='A')||(c1==='C'&&c2==='B');
+        moved.push({cod,desc:String(r2[COL.DESC]||''),c1,c2,fat2:num(r2,COL.FAT),dFat:num(r2,COL.FAT)-num(r1,COL.FAT),imp});
+      }
+    });
+    moved.sort((a,b)=>b.fat2-a.fat2);
+    const mvBody=document.getElementById('evo-moved-body');
+    mvBody.innerHTML=moved.length?moved.map(m=>{
+      const arrow=m.imp?'<span class="trend-up">↑</span>':'<span class="trend-down">↓</span>';
+      const dStr=m.dFat>=0?`<span class="trend-up">+${fmtBRL(m.dFat)}</span>`:`<span class="trend-down">${fmtBRL(m.dFat)}</span>`;
+      return `<tr>
+        <td style="font-family:monospace;font-size:.73rem;">${m.cod}</td>
+        <td title="${m.desc}">${m.desc.substring(0,32)}${m.desc.length>32?'…':''}</td>
+        <td style="text-align:center;"><span class="evo-class-badge ${m.c1}">${m.c1}</span></td>
+        <td style="text-align:center;">${arrow}</td>
+        <td style="text-align:center;"><span class="evo-class-badge ${m.c2}">${m.c2}</span></td>
+        <td style="text-align:right;font-variant-numeric:tabular-nums;">${fmtBRL(m.fat2)}</td>
+        <td style="text-align:right;">${dStr}</td>
+      </tr>`;
+    }).join('')
+    :`<tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--text-muted);">Nenhum produto mudou de classe.</td></tr>`;
+  } else {
+    document.getElementById('evo-champions-body').innerHTML='<tr><td colspan="5" style="text-align:center;padding:1rem;color:var(--text-muted);">Adicione ao menos 2 períodos.</td></tr>';
+    document.getElementById('evo-moved-body').innerHTML='<tr><td colspan="7" style="text-align:center;padding:1rem;color:var(--text-muted);">Adicione ao menos 2 períodos.</td></tr>';
   }
 }
+
+
+
+function sumFat(arr){ return arr.reduce((s,r)=>s+num(r,COL.FAT),0); }
+function sumQtd(arr){ return arr.reduce((s,r)=>s+num(r,COL.QTD),0); }
+function sortByFat(arr){ return [...arr].sort((a,b)=>num(b,COL.FAT)-num(a,COL.FAT)); }
+function fmtAxisBRL(v){ return v>=1e6?'R$'+(v/1e6).toFixed(1)+'M':v>=1e3?'R$'+(v/1e3).toFixed(0)+'k':'R$'+v; }
+function getFamilia(r){ return String(r[COL.COD]||'').split('.')[0]; }
+
+function clearFilterInputs(){
+  FILTER_IDS.forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-search').value='';
+  activeFlags.clear();
+  ['ft-linha','ft-exc','ft-lanc'].forEach(id=>{
+    const el=document.getElementById(id);
+    el.classList.remove('active-linha','active-exc','active-lanc');
+  });
+}
+
+function toggleFlag(flag){
+  if(activeFlags.has(flag)){
+    activeFlags.delete(flag);
+    const id=flag==='LINHA'?'ft-linha':flag==='EXC'?'ft-exc':'ft-lanc';
+    const cls=flag==='LINHA'?'active-linha':flag==='EXC'?'active-exc':'active-lanc';
+    document.getElementById(id).classList.remove(cls);
+  }else{
+    activeFlags.add(flag);
+    const id=flag==='LINHA'?'ft-linha':flag==='EXC'?'ft-exc':'ft-lanc';
+    const cls=flag==='LINHA'?'active-linha':flag==='EXC'?'active-exc':'active-lanc';
+    document.getElementById(id).classList.add(cls);
+  }
+  currentPage=1;
+  updateFlagBanner();
+  applyFilters();
+}
+
 
 function populateFamiliaFilter(){
   const sel=document.getElementById('f-familia');
@@ -2361,7 +2535,7 @@ function resetAll(){
     const el=document.getElementById(id);
     if(el)el.classList.remove('visible');
   });
-  _lastSheetId='';const gsUrl=document.getElementById('gs-url');if(gsUrl){const saved=localStorage.getItem('gs_last_url')||'';gsUrl.value=saved;}
+  _lastSheetId='';
   dashboardEl.style.display='none';
   importScreen.style.display='flex';
   const sh=document.getElementById('btn-salvar-header');if(sh)sh.style.display='none';
@@ -3603,11 +3777,9 @@ function switchTab(tab){
   if(isMov) renderMovTab();
 }
 document.querySelectorAll('.tab-btn').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.tab)));
-// Restore last used URL
 (function(){const u=localStorage.getItem('gs_last_url');if(u){const el=document.getElementById('gs-url');if(el)el.value=u;}})();
-// Enter key on URL input
-const gsUrlEl=document.getElementById('gs-url');
-if(gsUrlEl)gsUrlEl.addEventListener('keydown',e=>{if(e.key==='Enter')iniciarCargaSheets();});
+const _gsUrlEl=document.getElementById('gs-url');
+if(_gsUrlEl)_gsUrlEl.addEventListener('keydown',e=>{if(e.key==='Enter')iniciarCargaSheets();});
 
 
 // ====================================================================
