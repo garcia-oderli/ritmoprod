@@ -28,6 +28,7 @@ jobs:
           cp esteira_tv.html target/
           cp simulacoes.html target/
           cp programacao.html target/
+          cp curva_abc.html target/
           cp pesos.html target/
           cp formulas.html target/
           cp painel_vercel.json target/vercel.json
