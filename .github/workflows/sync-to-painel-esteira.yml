@@ -20,7 +20,7 @@ jobs:
         run: |
           git clone https://x-access-token:${{ secrets.PAINEL_ESTEIRA_TOKEN }}@github.com/p09728655-maker/painel-esteira.git target
 
-      - name: Copy files
+      - name: Copy files to painel-esteira
         run: |
           cp app.html target/
           cp app.html target/index.html
@@ -34,11 +34,35 @@ jobs:
           cp painel_vercel.json target/vercel.json
           cp esteira_script.gs target/ 2>/dev/null || true
 
-      - name: Commit and push
+      - name: Commit and push painel-esteira
         run: |
           cd target
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
           git add -A
           git diff --staged --quiet && echo "Nada a sincronizar" || git commit -m "sync: atualização automática de garcia-oderli/ritmoprod"
+          git push
+
+      - name: Clone curva-abc
+        run: |
+          git clone https://x-access-token:${{ secrets.PAINEL_ESTEIRA_TOKEN }}@github.com/p09728655-maker/curva-abc.git target-curva-abc
+
+      - name: Copy files to curva-abc
+        run: |
+          cp curva_abc.html target-curva-abc/index.html
+          cat > target-curva-abc/vercel.json << 'EOF'
+          {
+            "routes": [
+              { "src": "/(.*)", "dest": "/index.html" }
+            ]
+          }
+          EOF
+
+      - name: Commit and push curva-abc
+        run: |
+          cd target-curva-abc
+          git config user.email "action@github.com"
+          git config user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet && echo "Nada a sincronizar (curva-abc)" || git commit -m "sync: atualização automática de garcia-oderli/ritmoprod"
           git push
