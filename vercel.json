@@ -1,7 +1,7 @@
 {
   "version": 2,
   "$comment": "garcia-oderli/ritmoprod → auto-sync via GitHub Actions",
-  "buildCommand": "vite build && cp esteira_operador.html dist/ && cp esteira_tv.html dist/ && cp simulacoes.html dist/ && cp programacao.html dist/",
+  "buildCommand": "vite build && cp esteira_operador.html dist/ && cp esteira_tv.html dist/ && cp simulacoes.html dist/ && cp programacao.html dist/ && cp curva_abc.html dist/",
   "outputDirectory": "dist",
   "builds": [
     {
@@ -17,6 +17,7 @@
     { "src": "/tv",           "dest": "/esteira_tv.html"      },
     { "src": "/simulacoes",   "dest": "/simulacoes.html"      },
     { "src": "/programacao",  "dest": "/programacao.html"     },
+    { "src": "/curva-abc",    "dest": "/curva_abc.html"       },
     { "src": "/(.*)",         "dest": "/$1"                   }
   ]
 }
