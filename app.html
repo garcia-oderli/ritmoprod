@@ -2347,10 +2347,26 @@ async function progCarregarSemana(){
       const cx=itens.reduce((s,t)=>s+(t.qtd_cx||0),0);
       const kg=itens.reduce((s,t)=>s+((parseFloat(t.pb)||0)*(t.qtd_cx||0)),0);
       const pt=itens.reduce((s,t)=>s+((parseFloat(t.pontos)||0)*(t.qtd_cx||0)),0);
-      const tempo=itens.reduce((s,t)=>s+(t.tempo_min||0),0);
-      const fim=itens.reduce((m,t)=>(t.hora_fim||'')>m?t.hora_fim:m,'');
+      // tempo de cada item: usa o salvo; se faltar, calcula por vel/medida/entre peças (com fadiga)
+      const fad=progGetFadiga();
+      let estimado=false;
+      const tempos=itens.map(t=>{
+        if(t.tempo_min>0)return t.tempo_min;
+        const cxMin=(t.vel>0&&((t.medida||0)+(t.entre_pecas||0))>0)?calcCxMinRaw(t.vel,t.medida,t.entre_pecas||0)*(1-fad):0;
+        if(cxMin>0){estimado=true;return t.qtd_cx/cxMin;}
+        return 0;
+      });
+      const tempo=tempos.reduce((s,v)=>s+v,0);
+      // fim previsto: usa o salvo; se faltar, projeta a sequência a partir das 07:00 (com almoço)
+      let fim=itens.reduce((m,t)=>(t.hora_fim||'')>m?t.hora_fim:m,'');
+      if(!fim&&tempo>0){
+        let cur=parseHHMM(TURNO_INICIO);
+        tempos.forEach(tm=>{cur=progAddMinComAlmoco(cur,tm);});
+        fim='~'+minToHHMM(cur);estimado=true;
+      }
       totCx+=cx;totKg+=kg;totPt+=pt;
-      html+=`<tr><td>${nomes[i]}</td><td class="td-codigo">${br}</td><td class="td-num">${itens.length}</td><td class="td-num">${cx.toLocaleString('pt-BR')}</td><td class="td-num" style="color:var(--ok)">${kg>0?kg.toFixed(0)+' kg':'—'}</td><td class="td-num" style="color:var(--warn)">${pt>0?fmtNum(pt,0)+' pt':'—'}</td><td class="td-num">${fmtTempoHM(tempo)}</td><td class="td-hora">${fim||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="progAbrirDia('${x.toISOString().slice(0,10)}')">Abrir</button></td></tr>`;
+      const tempoStr=tempo>0?(estimado?'~':'')+fmtTempoHM(tempo):'—';
+      html+=`<tr><td>${nomes[i]}</td><td class="td-codigo">${br}</td><td class="td-num">${itens.length}</td><td class="td-num">${cx.toLocaleString('pt-BR')}</td><td class="td-num" style="color:var(--ok)">${kg>0?kg.toFixed(0)+' kg':'—'}</td><td class="td-num" style="color:var(--warn)">${pt>0?fmtNum(pt,0)+' pt':'—'}</td><td class="td-num" title="${estimado?'Estimado a partir de velocidade/medida/entre peças (não estava salvo)':''}">${tempoStr}</td><td class="td-hora">${fim||'—'}</td><td><button class="btn btn-outline btn-sm" onclick="progAbrirDia('${x.toISOString().slice(0,10)}')">Abrir</button></td></tr>`;
     });
     html+=`<tr style="font-weight:700"><td colspan="3" style="text-align:right;color:var(--txt2)">Total da semana:</td><td class="td-num">${totCx.toLocaleString('pt-BR')}</td><td class="td-num" style="color:var(--ok)">${totKg>0?totKg.toFixed(0)+' kg':'—'}</td><td class="td-num" style="color:var(--warn)">${totPt>0?fmtNum(totPt,0)+' pt':'—'}</td><td colspan="3"></td></tr>`;
     html+='</tbody></table>';
