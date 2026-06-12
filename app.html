@@ -2005,10 +2005,12 @@ async function progCarregarProgramacao(){
     if(!data||data.length===0){status.textContent='Nenhuma programação salva para esta data.';return;}
     if(progCacheProdutos.length===0){try{const lista=await progApiFetch(`${getAppsScriptURL()}?acao=produtos`);if(lista)progCacheProdutos=lista;}catch(e){}}
     progItens=data.map(item=>{
-      const vel=item.vel||0,med=item.medida||0,ep=item.entre_pecas||0;
+      const prod=progCacheProdutos.find(p=>p.codigo===item.codigo);
+      const vel=parseFloat(item.vel)||(prod?parseFloat(prod.vel)||0:0);
+      const med=parseFloat(item.medida)||(prod?parseFloat(prod.medida)||0:0);
+      const ep=(item.entre_pecas!=null&&item.entre_pecas!=='')?parseFloat(item.entre_pecas)||0:(prod?parseFloat(prod.entre_pecas)||0:0);
       const cxMin=(vel>0&&(med+ep)>0)?calcCxMinRaw(vel,med,ep)*(1-progGetFadiga()):0;
       const cxH=Math.round(cxMin*60),tmpMin=cxMin>0?parseFloat((item.qtd_cx/cxMin).toFixed(1)):0;
-      const prod=progCacheProdutos.find(p=>p.codigo===item.codigo);
       const pb=parseFloat(item.pb)||(prod?parseFloat(prod.pb)||0:0);
       const pontos=parseFloat(item.pontos)||(prod?parseFloat(prod.pontos)||0:0);
       return{codigo:item.codigo,descricao:item.descricao,qtd_cx:item.qtd_cx,vel,medida:med,entre_pecas:ep,cx_min:parseFloat(cxMin.toFixed(4)),cx_h:cxH,tempo_min:tmpMin,hora_inicio:'',hora_fim:'',pb,pontos,troca_min:0};
