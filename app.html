@@ -536,9 +536,9 @@ td.td-actions { width: 80px; text-align: right; }
 <div id="app-header">
   <span class="app-brand">ritmoprod<span>.</span></span>
   <nav class="app-tabs">
-    <button class="app-tab active" onclick="switchTab('operador')">Operador</button>
+    <button class="app-tab" onclick="switchTab('operador')">Operador</button>
     <button class="app-tab" onclick="switchTab('tv')">TV</button>
-    <button class="app-tab" onclick="switchTab('programacao')">Programação</button>
+    <button class="app-tab active" onclick="switchTab('programacao')">Programação</button>
     <button class="app-tab" onclick="switchTab('simulacoes')">Simulações</button>
   </nav>
   <div class="app-right">
@@ -554,7 +554,7 @@ td.td-actions { width: 80px; text-align: right; }
 <div id="app-body">
 
 <!-- ══════════════ TAB: OPERADOR ══════════════ -->
-<div id="tab-operador" class="tab-panel active">
+<div id="tab-operador" class="tab-panel">
   <div id="op-wrapper">
 
     <div id="offline-banner" class="hidden">⚠ Modo offline — dados salvos localmente</div>
@@ -789,7 +789,7 @@ td.td-actions { width: 80px; text-align: right; }
 </div><!-- /tab-tv -->
 
 <!-- ══════════════ TAB: PROGRAMAÇÃO ══════════════ -->
-<div id="tab-programacao" class="tab-panel">
+<div id="tab-programacao" class="tab-panel active">
 
   <!-- Print-only header -->
   <div id="prog-print-header" style="display:none;font-family:'Inter',sans-serif;padding:0 0 10px 0">
@@ -1134,7 +1134,7 @@ function getCorPct(pct, idle) {
 // ═══════════════════════════════════════════════════════════════
 // TAB SWITCHING
 // ═══════════════════════════════════════════════════════════════
-let currentTab = 'operador';
+let currentTab = 'programacao';
 
 function switchTab(name) {
   // Stop scan if leaving operator/ean tab
