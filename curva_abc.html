@@ -4132,7 +4132,7 @@ function renderMaterialTab(){
   if(!PERIODOS.length){content.innerHTML='<p style="color:var(--text-muted);padding:2rem;">Carregue a planilha.</p>';return;}
   const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[ch]));
   const catColor=c=>({'Avaria / Quebra':'#f87171','Acabamento':'#fbbf24','Divergência':'#a78bfa','Faltante':'#60a5fa','Logística / Estoque':'#34d399','Furação / Montagem':'#f472b6','Componente':'#22d3ee','Sem motivo':'#71717a'}[c]||'#94a3b8');
-  const catBadge=c=>`<span style="display:inline-block;padding:.05rem .45rem;border-radius:999px;font-size:.7rem;font-weight:700;color:#0a0a0b;background:${catColor(c)};">${esc(c)}</span>`;
+  const catBadge=c=>`<span style="display:inline-block;vertical-align:middle;padding:.05rem .45rem;border-radius:999px;font-size:.7rem;font-weight:700;color:#0a0a0b;background:${catColor(c)};">${esc(c)}</span>`;
   // popula filtros (famílias + categorias), preservando a seleção atual
   const famSel=document.getElementById('assist-fam');
   if(famSel){
