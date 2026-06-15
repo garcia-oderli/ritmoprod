@@ -4038,6 +4038,12 @@ function buildAssistByModel(rows){
     g.vend=info?info.vend:0;
     g.nAssist=g.assistIds.size||g.linhas.length;
     g.taxa=g.vend>0?g.qtd/g.vend*100:null; // peças com defeito / unidades vendidas
+    // top motivo e categoria para o modelo
+    const mMap=new Map();
+    g.linhas.forEach(l=>{const k=l.motivo||'';mMap.set(k,(mMap.get(k)||0)+l.qtd);});
+    let topMot='',topMotQ=0;for(const [k,v] of mMap){if(v>topMotQ){topMotQ=v;topMot=k;}}
+    g.topMotivo=topMot;
+    g.topCategoria=_motivoCategoria(topMot);
     return g;
   }).sort((a,b)=>b.qtd-a.qtd);
   const totalQtd=rows.reduce((s,x)=>s+x.qtd,0);
@@ -4209,10 +4215,13 @@ function renderMaterialTab(){
     html+='<p style="color:var(--text-muted);font-size:.78rem;margin:-.3rem 0 .6rem;">Clique num modelo para focar tudo nele.</p>';
     html+='<div style="overflow-x:auto;"><table class="mov-table"><thead><tr>'
       +'<th>Modelo</th><th>Família</th><th style="text-align:right">Nº assist.</th><th style="text-align:right">Peças</th><th style="text-align:right">% peças</th>'
-      +'<th style="text-align:center">Classe</th><th style="text-align:right">Un. vendidas</th><th style="text-align:right">Taxa assist.</th><th style="text-align:right">Faturamento</th><th style="text-align:right">% fat.</th></tr></thead><tbody>';
+      +'<th style="text-align:center">Classe</th><th>Principal problema</th><th style="text-align:right">Un. vendidas</th><th style="text-align:right">Taxa assist.</th><th style="text-align:right">Faturamento</th><th style="text-align:right">% fat.</th></tr></thead><tbody>';
     for(const g of arr){
       const c=cls(g.qtd);
       const taxa=g.taxa==null?'<span style="color:var(--text-muted)">—</span>':fmtPct(g.taxa,2);
+      const probCell=g.topCategoria
+        ?`${catBadge(g.topCategoria)}<span style="font-size:.72rem;color:var(--text-muted);margin-left:.3rem;">${esc(g.topMotivo)}</span>`
+        :'<span style="color:var(--text-muted)">—</span>';
       html+=`<tr onclick="_assistFocus('${g.key}')" style="cursor:pointer;">`
         +`<td>${esc(g.name)}${g.naCurva?'':' <span style="color:#fbbf24;font-size:.7rem;">(fora da curva)</span>'}</td>`
         +`<td style="font-family:monospace;font-size:.72rem;color:var(--text-muted)">${esc(g.famKey)}</td>`
@@ -4220,6 +4229,7 @@ function renderMaterialTab(){
         +`<td style="text-align:right;font-weight:700;">${fmtInt(g.qtd)}</td>`
         +`<td style="text-align:right;">${pct(g.qtd)}</td>`
         +`<td style="text-align:center;">${clsBadge(c)}</td>`
+        +`<td style="white-space:nowrap;">${probCell}</td>`
         +`<td style="text-align:right;">${g.vend>0?fmtInt(g.vend):'<span style="color:var(--text-muted)">—</span>'}</td>`
         +`<td style="text-align:right;">${taxa}</td>`
         +`<td style="text-align:right;font-size:.8rem;">${g.fat>0?fmtBRL(g.fat):'<span style="color:var(--text-muted)">—</span>'}</td>`
@@ -4227,7 +4237,7 @@ function renderMaterialTab(){
     }
     html+=`<tr style="border-top:2px solid var(--accent);"><td colspan="2"><strong>TOTAL</strong></td>`
       +`<td style="text-align:right;font-weight:800;color:var(--accent);">${fmtInt(totalAssist||rows.length)}</td>`
-      +`<td style="text-align:right;font-weight:800;color:var(--accent);">${fmtInt(totalQtd)}</td><td></td><td></td><td></td><td></td>`
+      +`<td style="text-align:right;font-weight:800;color:var(--accent);">${fmtInt(totalQtd)}</td><td></td><td></td><td></td><td></td><td></td>`
       +`<td style="text-align:right;font-weight:800;color:var(--accent);">${fmtBRL(grandFat)}</td><td></td></tr>`;
     html+='</tbody></table></div>';
   } else if(_assistView==='produtos'){
