@@ -4277,7 +4277,7 @@ function renderMaterialTab(){
       html+=`<tr><td style="font-family:monospace;font-size:.72rem;color:var(--text-muted)">${esc(a.assist)}</td>`
         +`<td style="font-family:monospace;font-size:.72rem;">${esc(a.cod)}</td>`
         +`<td style="font-size:.8rem;">${esc(a.refName)}</td><td style="font-size:.8rem;">${esc(a.parte)}</td>`
-        +`<td style="font-size:.78rem;">${esc(a.motivo)} ${catBadge(_motivoCategoria(a.motivo))}</td>`
+        +`<td style="font-size:.78rem;white-space:nowrap;"><span style="display:inline-flex;align-items:center;gap:.35rem;">${esc(a.motivo)}${catBadge(_motivoCategoria(a.motivo))}</span></td>`
         +`<td style="text-align:right;">${fmtInt(a.qtd)}</td></tr>`;
     }
     html+='</tbody></table></div>';
