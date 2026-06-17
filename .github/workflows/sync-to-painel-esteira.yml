@@ -9,6 +9,10 @@ on:
       - 'esteira_script.gs'
       - 'painel_home.html'
 
+concurrency:
+  group: sync-painel-esteira
+  cancel-in-progress: true
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -39,8 +43,9 @@ jobs:
           cd target
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          git add -A
+          git add app.html index.html esteira_operador.html esteira_tv.html simulacoes.html programacao.html curva_abc.html pesos.html formulas.html vercel.json esteira_script.gs 2>/dev/null || true
           git diff --staged --quiet && echo "Nada a sincronizar" || git commit -m "sync: atualização automática de garcia-oderli/ritmoprod"
+          git pull --rebase origin main
           git push
 
       - name: Clone curva-abc
@@ -63,6 +68,7 @@ jobs:
           cd target-curva-abc
           git config user.email "action@github.com"
           git config user.name "GitHub Action"
-          git add -A
+          git add index.html vercel.json
           git diff --staged --quiet && echo "Nada a sincronizar (curva-abc)" || git commit -m "sync: atualização automática de garcia-oderli/ritmoprod"
+          git pull --rebase origin main
           git push
